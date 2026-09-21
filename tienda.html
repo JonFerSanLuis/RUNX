@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Tienda de equipamiento técnico de running BRAND NAME.">
+  <title>Tienda | BRAND NAME</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+  <link href="css/responsive.css" rel="stylesheet">
+</head>
+<body>
+  <div data-site-header></div>
+  <main>
+    <section class="page-hero"><div class="container"><p class="eyebrow">La colección</p><h1 class="display-4">Tienda</h1><p class="text-secondary mb-0">Productos de prueba para la primera versión del catálogo.</p></div></section>
+    <section class="container section-pad">
+      <div class="shop-mobile-toolbar d-lg-none mb-4">
+        <button class="btn btn-outline-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileFilters" aria-controls="mobileFilters">Filtros <span class="filter-count" data-filter-count hidden>0</span></button>
+        <label class="d-flex align-items-center gap-2 small fw-semibold">Ordenar
+          <select id="sortProducts" class="form-select form-select-sm"><option value="relevance">Relevancia</option><option value="best">Más vendidos</option><option value="low">Precio: menor a mayor</option><option value="high">Precio: mayor a menor</option><option value="new">Novedades</option><option value="rating">Mejor valorados</option></select>
+        </label>
+      </div>
+      <div class="row g-4">
+        <aside class="col-lg-3 d-none d-lg-block shop-sidebar">
+          <form class="filter-panel" data-filter-form>
+            <div class="d-flex justify-content-between align-items-center mb-3"><h2 class="filter-title mb-0">Filtros</h2><button type="button" class="btn btn-link small p-0" data-reset-filters>Limpiar</button></div>
+            <fieldset class="mb-4"><legend>Categoría</legend><div class="form-check"><input class="form-check-input" type="radio" name="category" value="Calcetines" id="cat1"><label class="form-check-label" for="cat1">Calcetines</label></div><div class="form-check"><input class="form-check-input" type="radio" name="category" value="Running" id="cat2"><label class="form-check-label" for="cat2">Running</label></div><div class="form-check"><input class="form-check-input" type="radio" name="category" value="Accesorios" id="cat3"><label class="form-check-label" for="cat3">Accesorios</label></div></fieldset>
+            <fieldset class="mb-4"><legend>Precio</legend><div class="form-check"><input class="form-check-input" type="radio" name="price" value="under15" id="p1"><label class="form-check-label" for="p1">Menos de 15 €</label></div><div class="form-check"><input class="form-check-input" type="radio" name="price" value="15to25" id="p2"><label class="form-check-label" for="p2">15 € – 25 €</label></div><div class="form-check"><input class="form-check-input" type="radio" name="price" value="over25" id="p3"><label class="form-check-label" for="p3">Más de 25 €</label></div></fieldset>
+            <fieldset class="mb-4"><legend>Color</legend><div class="form-check"><input class="form-check-input" type="checkbox" name="color" value="Negro" id="c1"><label class="form-check-label" for="c1">Negro</label></div><div class="form-check"><input class="form-check-input" type="checkbox" name="color" value="Blanco" id="c2"><label class="form-check-label" for="c2">Blanco</label></div><div class="form-check"><input class="form-check-input" type="checkbox" name="color" value="Gris" id="c3"><label class="form-check-label" for="c3">Gris</label></div></fieldset>
+            <fieldset><legend>Talla</legend><div class="form-check"><input class="form-check-input" type="checkbox" name="size" value="S" id="s1"><label class="form-check-label" for="s1">S</label></div><div class="form-check"><input class="form-check-input" type="checkbox" name="size" value="M" id="s2"><label class="form-check-label" for="s2">M</label></div><div class="form-check"><input class="form-check-input" type="checkbox" name="size" value="L" id="s3"><label class="form-check-label" for="s3">L</label></div></fieldset>
+          </form>
+        </aside>
+        <div class="col-lg-9">
+          <div class="d-none d-lg-flex justify-content-between gap-3 align-items-center mb-4"><span class="text-secondary" data-shop-count></span><label class="d-flex align-items-center gap-2 small">Ordenar <select id="sortProductsDesktop" class="form-select form-select-sm"><option value="relevance">Relevancia</option><option value="best">Más vendidos</option><option value="low">Precio: menor a mayor</option><option value="high">Precio: mayor a menor</option><option value="new">Novedades</option><option value="rating">Mejor valorados</option></select></label></div>
+          <p class="text-secondary small d-lg-none mb-3" data-shop-count></p>
+          <div class="row product-grid g-3 g-md-4" data-product-grid></div>
+          <nav class="mt-4 mt-md-5" aria-label="Paginación de tienda" data-pagination></nav>
+        </div>
+      </div>
+    </section>
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileFilters" aria-labelledby="mobileFiltersTitle"><div class="offcanvas-header"><h2 class="h5 mb-0" id="mobileFiltersTitle">Filtros</h2><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar filtros"></button></div><div class="offcanvas-body" data-mobile-filter-root></div></div>
+  </main>
+  <div data-site-footer></div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script><script src="js/products.js"></script><script src="js/cart.js"></script><script src="js/main.js"></script><script src="js/shop.js"></script>
+</body>
+</html>
