@@ -1,29 +1,51 @@
-# BRAND NAME — frontend de tienda running
+# BRAND NAME — tienda de running
 
-Primera fase visual y funcional de una tienda de equipamiento técnico para running. **BRAND NAME**, productos, reseñas, precios, condiciones comerciales y textos legales son provisionales.
+Frontend responsive y API de catálogo para una tienda de running. Marca, productos, precios, reseñas y contenidos legales son provisionales.
 
 ## Tecnologías
 
-HTML5, CSS3, Bootstrap 5 (CDN) y JavaScript vanilla. No requiere Node, compilación ni backend.
+HTML5, CSS3, Bootstrap 5, JavaScript vanilla, PHP, MySQL y PDO. No utiliza Node ni frameworks.
 
-## Ejecutar
+## Estructura relevante
 
-Abre `index.html` en un navegador o sirve la carpeta con cualquier servidor estático. Bootstrap se carga desde CDN, por lo que se necesita conexión para sus estilos y componentes.
+- `backend/config/database.php`: conexión PDO y carga opcional de `.env`.
+- `backend/api/products.php`: catálogo JSON, detalle, filtros, ordenación y paginación.
+- `backend/api/categories.php`: categorías JSON.
+- `database/schema.sql`: estructura MySQL con claves, relaciones e índices.
+- `database/seed.sql`: 14 productos ficticios, variantes, imágenes y características.
+- `js/products.js`: cliente `fetch()` de la API.
+- `js/shop.js`, `js/product.js`, `js/cart.js`: tienda, producto y carrito con datos de API.
 
-## Estructura
+## Arranque local
 
-- `index.html`, `tienda.html`, `producto.html`, `carrito.html`, `checkout.html`: experiencia de compra.
-- `login.html`, `registro.html`, `cuenta.html`: interfaces de cuenta preparadas para backend.
-- `contacto.html`, `sobre-nosotros.html`, `faq.html`, `legal/`: información y formularios provisionales.
-- `css/`: estilos de marca y ajustes responsive.
-- `js/products.js`: catálogo temporal centralizado.
-- `js/cart.js`: carrito persistente mediante `localStorage`.
-- `js/shop.js` y `js/product.js`: filtros/ordenación/paginación y ficha dinámica.
+1. Copia `.env.example` como `.env` y completa las credenciales locales de MySQL. `.env` no se versiona.
+2. Ejecuta `database/schema.sql` y después `database/seed.sql` en MySQL:
 
-## Modificar catálogo y estilos
+   ```bash
+   mysql -u root -p < database/schema.sql
+   mysql -u root -p running_store < database/seed.sql
+   ```
 
-Edita el array `PRODUCTS` de `js/products.js`. Cada producto conserva los campos que necesitará una futura API: id, nombre, categoría, precio, imágenes, variantes, características, valoración y stock. Los colores, espaciados y tipografía base están en `css/style.css`.
+3. Desde la raíz del proyecto, inicia PHP:
 
-## Estado actual y siguiente fase
+   ```bash
+   php -S localhost:8000
+   ```
 
-El carrito se mantiene tras recargar usando la clave `brand-name-cart` de `localStorage`. Checkout, login, registro y contacto solo validan en frontend y muestran una simulación. Pendiente: PHP/MySQL, usuarios, pedidos, gestión real de stock, catálogo real, Stripe/PayPal, formularios enviados, contenidos legales definitivos y políticas comerciales.
+4. Abre `http://localhost:8000/index.html`. No abras el proyecto con `file:///`, ya que el catálogo necesita la API PHP.
+
+## Probar la API
+
+```text
+http://localhost:8000/backend/api/categories.php
+http://localhost:8000/backend/api/products.php
+http://localhost:8000/backend/api/products.php?id=1
+http://localhost:8000/backend/api/products.php?category=calcetines&min_price=10&max_price=20&sort=low&page=1&limit=12
+http://localhost:8000/backend/api/products.php?color=Negro,Blanco&size=M&featured=1
+```
+
+La API devuelve errores públicos genéricos y nunca expone credenciales ni consultas SQL. Los criterios de ordenación usan una lista permitida y todos los filtros se parametrizan con PDO.
+
+## Estado actual
+
+El carrito permanece en `localStorage` y almacena IDs de los productos, cantidad, talla y color. El backend de esta fase solo expone catálogo. Están pendientes usuarios, sesiones, pedidos, pagos, stock avanzado, administración, formularios reales y políticas comerciales definitivas.
