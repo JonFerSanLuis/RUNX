@@ -159,6 +159,7 @@ async function initAccountPage() {
   account.querySelector('[data-user-email]').textContent = session.user.email;
   account.querySelector('[data-profile-name]').value = session.user.name;
   account.hidden = false;
+  if (typeof renderAccountOrders === 'function') renderAccountOrders();
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
