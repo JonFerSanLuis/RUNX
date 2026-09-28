@@ -219,6 +219,38 @@ try {
     }
 
     $db->commit();
+
+    // Notificaciones por correo electrónico (cliente y administrador)
+    try {
+        require_once __DIR__ . '/../lib/mailer.php';
+        $userStmt = $db->prepare('SELECT name, email FROM users WHERE id = :id LIMIT 1');
+        $userStmt->execute(['id' => $userId]);
+        $userData = $userStmt->fetch();
+        $customerEmail = $userData ? (string) $userData['email'] : '';
+        $customerName = !empty($shippingName) ? $shippingName : ($userData ? (string) $userData['name'] : 'Cliente');
+
+        $orderSummary = [
+            'id' => $orderId,
+            'subtotal' => centsToMoney($subtotalCents),
+            'shipping_cost' => centsToMoney($shippingCents),
+            'total' => centsToMoney($totalCents),
+            'shipping_name' => $shippingName,
+            'shipping_address' => $shippingAddress,
+            'shipping_city' => $shippingCity,
+            'shipping_postal_code' => $shippingPostalCode,
+            'shipping_province' => $shippingProvince,
+            'shipping_phone' => $shippingPhone,
+            'notes' => $shippingNotes,
+        ];
+
+        if ($customerEmail !== '') {
+            sendOrderConfirmationEmail($orderSummary, $orderLines, $customerEmail, $customerName);
+        }
+        sendAdminNewOrderNotification($orderSummary, $orderLines, $customerEmail, $customerName);
+    } catch (Throwable $mailException) {
+        error_log('Error enviando notificaciones de pedido #' . $orderId . ': ' . $mailException->getMessage());
+    }
+
     jsonResponse(['success' => true, 'order_id' => $orderId, 'message' => 'Pedido creado correctamente.']);
 } catch (Throwable $exception) {
     if ($db->inTransaction()) {

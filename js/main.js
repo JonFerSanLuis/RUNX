@@ -206,6 +206,82 @@ function initAuthenticationForms() {
     } catch (error) { setFormMessage(passwordForm, error.message); }
   });
 
+  const forgotForm = document.querySelector('[data-forgot-password-form]');
+  forgotForm?.addEventListener('submit', async event => {
+    event.preventDefault();
+    forgotForm.classList.add('was-validated');
+    if (!forgotForm.checkValidity()) return;
+    const btn = forgotForm.querySelector('button[type="submit"]');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Enviando enlace…';
+    try {
+      const result = await apiRequest('backend/api/forgot-password.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotForm.email.value.trim() }),
+      });
+      setFormMessage(forgotForm, result.message, 'success');
+      forgotForm.reset();
+      forgotForm.classList.remove('was-validated');
+    } catch (error) {
+      setFormMessage(forgotForm, error.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  });
+
+  const resetForm = document.querySelector('[data-reset-password-form]');
+  if (resetForm) {
+    refreshFieldValidity(resetForm);
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token') || '';
+    const email = params.get('email') || '';
+
+    if (!token || !email) {
+      setFormMessage(resetForm, 'El enlace de recuperación no es válido o está incompleto.');
+      resetForm.querySelector('button[type="submit"]')?.setAttribute('disabled', 'true');
+    } else {
+      resetForm.token.value = token;
+      resetForm.email.value = email;
+    }
+
+    resetForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      validatePasswordConfirmation(resetForm);
+      resetForm.classList.add('was-validated');
+      if (!resetForm.checkValidity()) return;
+
+      const btn = resetForm.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Actualizando contraseña…';
+
+      try {
+        const payload = {
+          token: resetForm.token.value.trim(),
+          email: resetForm.email.value.trim(),
+          password: resetForm.password.value,
+          password_confirmation: resetForm.password_confirmation.value,
+        };
+        const result = await apiRequest('backend/api/reset-password.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        setFormMessage(resetForm, result.message + ' Redirigiendo al inicio de sesión…', 'success');
+        resetForm.reset();
+        resetForm.classList.remove('was-validated');
+        window.setTimeout(() => location.assign('login.html'), 1800);
+      } catch (error) {
+        setFormMessage(resetForm, error.message);
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    });
+  }
+
   document.addEventListener('click', async event => {
     if (event.target.closest('[data-request-logout]')) {
       ensureLogoutModal();
@@ -257,6 +333,43 @@ async function initAccountPage() {
   if (typeof renderAccountOrders === 'function') renderAccountOrders();
 }
 
+function initContactForm() {
+  const form = document.querySelector('[data-contact-form]');
+  if (!form) return;
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    form.classList.add('was-validated');
+    if (!form.checkValidity()) return;
+
+    const btn = form.querySelector('[data-contact-submit]') || form.querySelector('button[type="submit"]');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Enviando mensaje…';
+
+    try {
+      const payload = {
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        subject: form.subject.value.trim(),
+        message: form.message.value.trim(),
+      };
+      const result = await apiRequest('backend/api/contact.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      setFormMessage(form, result.message, 'success');
+      form.reset();
+      form.classList.remove('was-validated');
+    } catch (error) {
+      setFormMessage(form, error.message, 'danger');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('[data-site-header]').forEach(el=>el.innerHTML=headerTemplate());
   document.querySelectorAll('[data-site-footer]').forEach(el=>el.innerHTML=footerTemplate());
@@ -265,6 +378,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   initForms();
   initMobileNavigation();
   initAuthenticationForms();
+  initContactForm();
   ensureLogoutModal();
   loadCurrentUser();
   initAccountPage();

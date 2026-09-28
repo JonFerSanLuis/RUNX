@@ -1,4 +1,6 @@
 .env
 backend/.env
 *.log
+backend/storage/
+
 

@@ -15,6 +15,6 @@ Options -Indexes
 # Bloquear acceso a la carpeta de configuración y base de datos
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteRule ^backend/config/ - [F,L]
+    RewriteRule ^backend/(config|storage|lib)/ - [F,L]
     RewriteRule ^database/ - [F,L]
 </IfModule>

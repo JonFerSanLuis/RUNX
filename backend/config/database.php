@@ -15,6 +15,11 @@ function loadEnvironment(string $path): void
         [$key, $value] = explode('=', $line, 2);
         $key = trim($key);
         $value = trim($value);
+        if (strlen($value) >= 2) {
+            if (($value[0] === '"' && $value[-1] === '"') || ($value[0] === "'" && $value[-1] === "'")) {
+                $value = substr($value, 1, -1);
+            }
+        }
         if ($key !== '' && getenv($key) === false) {
             putenv("{$key}={$value}");
         }

@@ -20,7 +20,10 @@
         <form data-login-form novalidate>
           <label class="form-label" for="loginEmail">Email</label>
           <input id="loginEmail" name="email" type="email" class="form-control mb-3" autocomplete="email" required>
-          <label class="form-label" for="loginPass">Contraseña</label>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label mb-0" for="loginPass">Contraseña</label>
+            <a class="small text-muted" href="recuperar-password.html">¿Has olvidado tu contraseña?</a>
+          </div>
           <input id="loginPass" name="password" type="password" class="form-control mb-4" autocomplete="current-password" required>
           <button class="btn btn-primary w-100" type="submit">Entrar</button>
         </form>

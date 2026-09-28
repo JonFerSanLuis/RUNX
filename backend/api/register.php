@@ -39,6 +39,15 @@ try {
         'email' => $email,
         'password' => password_hash($password, PASSWORD_DEFAULT),
     ]);
+
+    // Enviar email de bienvenida
+    try {
+        require_once __DIR__ . '/../lib/mailer.php';
+        sendWelcomeEmail($email, $name);
+    } catch (Throwable $mailException) {
+        error_log('Error en email de bienvenida: ' . $mailException->getMessage());
+    }
+
     jsonResponse(['success' => true, 'message' => 'Usuario registrado correctamente. Ya puedes iniciar sesión.'], 201);
 } catch (PDOException $exception) {
     if ($exception->getCode() === '23000') {
