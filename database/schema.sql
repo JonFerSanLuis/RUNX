@@ -85,7 +85,15 @@ CREATE TABLE orders (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id INT UNSIGNED NOT NULL,
   status ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending',
+  shipping_cost DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   total DECIMAL(10,2) NOT NULL,
+  shipping_name VARCHAR(120) NOT NULL,
+  shipping_address VARCHAR(255) NOT NULL,
+  shipping_city VARCHAR(100) NOT NULL,
+  shipping_postal_code VARCHAR(20) NOT NULL,
+  shipping_province VARCHAR(100) NOT NULL,
+  shipping_phone VARCHAR(30) NOT NULL,
+  notes TEXT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(id),
@@ -98,6 +106,8 @@ CREATE TABLE order_items (
   order_id INT UNSIGNED NOT NULL,
   product_id INT UNSIGNED NOT NULL,
   product_name VARCHAR(180) NOT NULL,
+  size VARCHAR(30) NULL,
+  color VARCHAR(60) NULL,
   quantity INT UNSIGNED NOT NULL,
   unit_price DECIMAL(10,2) NOT NULL,
   subtotal DECIMAL(10,2) NOT NULL,
@@ -106,3 +116,4 @@ CREATE TABLE order_items (
   INDEX idx_order_items_order (order_id),
   INDEX idx_order_items_product (product_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

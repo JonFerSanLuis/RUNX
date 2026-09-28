@@ -6,7 +6,7 @@ require_once __DIR__ . '/_response.php';
 
 try {
     $statement = database()->query(
-        'SELECT id, name, slug, description FROM categories ORDER BY name ASC'
+        'SELECT id, name, slug, description FROM categories ORDER BY id ASC'
     );
     jsonResponse(['data' => $statement->fetchAll()]);
 } catch (Throwable $exception) {

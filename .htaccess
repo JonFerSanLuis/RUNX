@@ -1,0 +1,20 @@
+# Bloquear listado de directorios
+Options -Indexes
+
+# Bloquear acceso a archivos sensibles (.env, .sql, .git, etc.)
+<FilesMatch "^(\.env|\.git|.*\.sql$)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Bloquear acceso a la carpeta de configuración y base de datos
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^backend/config/ - [F,L]
+    RewriteRule ^database/ - [F,L]
+</IfModule>
