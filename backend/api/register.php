@@ -33,11 +33,15 @@ try {
         apiError('El email ya está registrado.', 409);
     }
 
-    $statement = $db->prepare('INSERT INTO users (name, email, password) VALUES (:name, :email, :password)');
+    $adminEmail = mb_strtolower(trim((string) ($_ENV['ADMIN_EMAIL'] ?? '')));
+    $isAdmin = ($adminEmail !== '' && $email === $adminEmail) ? 1 : 0;
+
+    $statement = $db->prepare('INSERT INTO users (name, email, password, is_admin) VALUES (:name, :email, :password, :is_admin)');
     $statement->execute([
         'name' => $name,
         'email' => $email,
         'password' => password_hash($password, PASSWORD_DEFAULT),
+        'is_admin' => $isAdmin,
     ]);
 
     // Enviar email de bienvenida

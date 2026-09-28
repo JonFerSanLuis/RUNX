@@ -5,21 +5,64 @@ let activeOrderModal = null;
 let activeProductModal = null;
 let currentSelectedOrderId = null;
 
+if (typeof orderDate !== 'function') {
+  window.orderDate = function(value) {
+    if (!value) return '';
+    try {
+      return new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(String(value).replace(' ', 'T')));
+    } catch (e) {
+      return String(value);
+    }
+  };
+}
+
 async function checkAdminAuth() {
-  const session = await loadCurrentUser();
   const deniedEl = document.getElementById('admin-access-denied');
   const contentEl = document.getElementById('admin-main-content');
   const userEl = document.querySelector('[data-admin-user]');
+  const deniedMsg = document.getElementById('admin-denied-message');
+  const loginRedirectBtn = document.getElementById('btn-admin-login-redirect');
+  const logoutBtn = document.getElementById('btn-admin-logout');
 
-  if (!session.authenticated || !session.user || !session.user.is_admin) {
+  let session;
+  try {
+    session = await loadCurrentUser();
+  } catch (err) {
+    session = { authenticated: false };
+  }
+
+  // 1. Si no hay sesión iniciada, redirigir al login
+  if (!session || !session.authenticated || !session.user) {
+    if (userEl) userEl.textContent = 'No identificado';
+    if (logoutBtn) logoutBtn.classList.add('d-none');
+    location.replace('login.html?redirect=admin.html');
+    return false;
+  }
+
+  // 2. Si hay sesión iniciada pero no es administrador
+  if (!session.user.is_admin) {
+    if (userEl) {
+      userEl.innerHTML = `<span class="badge bg-warning text-dark me-1">Usuario estándar</span> ${session.user.email}`;
+    }
+    if (deniedMsg) {
+      deniedMsg.innerHTML = `Has iniciado sesión como <strong>${session.user.email}</strong>, pero esta cuenta no dispone de permisos de administrador.<br><span class="small text-muted mt-2 d-inline-block">Inicia sesión con una cuenta autorizada para acceder al panel.</span>`;
+    }
+    if (loginRedirectBtn) {
+      loginRedirectBtn.textContent = 'Cambiar a cuenta de administrador';
+    }
+    if (logoutBtn) logoutBtn.classList.remove('d-none');
     if (deniedEl) deniedEl.classList.remove('d-none');
     if (contentEl) contentEl.classList.add('d-none');
     return false;
   }
 
+  // 3. Sesión activa con rol de administrador
   if (deniedEl) deniedEl.classList.add('d-none');
   if (contentEl) contentEl.classList.remove('d-none');
-  if (userEl) userEl.textContent = `Sesión: ${session.user.name} (${session.user.email})`;
+  if (logoutBtn) logoutBtn.classList.remove('d-none');
+  if (userEl) {
+    userEl.innerHTML = `<span class="badge bg-success me-1">Admin</span> ${session.user.name} <span class="text-white-50">(${session.user.email})</span>`;
+  }
   return true;
 }
 
@@ -512,13 +555,19 @@ async function toggleProductActive(productId) {
 // INICIALIZACIÓN GENERAL
 // ----------------------------------------------------
 document.addEventListener('DOMContentLoaded', async () => {
-  const isAuthorized = await checkAdminAuth();
-  if (!isAuthorized) return;
+  try {
+    const isAuthorized = await checkAdminAuth();
+    if (!isAuthorized) return;
 
-  // Cargar datos iniciales
-  loadAdminStats();
-  loadAdminOrders();
-  loadAdminProducts();
+    // Cargar datos iniciales
+    await Promise.allSettled([
+      loadAdminStats(),
+      loadAdminOrders(),
+      loadAdminProducts(),
+    ]);
+  } catch (err) {
+    console.error('Error inicializando panel admin:', err);
+  }
 
   // Logout de administrador
   const logoutBtn = document.getElementById('btn-admin-logout');

@@ -1,5 +1,14 @@
 function formatPrice(value){return new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(value);}
 
+function orderDate(value) {
+  if (!value) return '';
+  try {
+    return new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(String(value).replace(' ', 'T')));
+  } catch (e) {
+    return String(value);
+  }
+}
+
 function headerTemplate(){
   const page=location.pathname.split('/').pop()||'index.html';
   const root=location.pathname.includes('/legal/')?'../':'';

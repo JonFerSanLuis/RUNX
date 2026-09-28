@@ -22,22 +22,22 @@
         <span class="badge bg-primary text-uppercase px-2 py-1 small">Panel Admin</span>
       </div>
       <div class="d-flex align-items-center gap-3">
-        <span class="small text-secondary d-none d-md-inline" data-admin-user>Cargando sesión…</span>
+        <span class="small text-secondary d-none d-md-inline" data-admin-user><span class="spinner-border spinner-border-sm me-1" style="width: 0.8rem; height: 0.8rem;" role="status"></span>Comprobando acceso…</span>
         <a href="tienda.html" class="btn btn-outline-light btn-sm">Ver Tienda</a>
-        <button class="btn btn-outline-danger btn-sm" id="btn-admin-logout">Salir</button>
+        <button class="btn btn-outline-danger btn-sm d-none" id="btn-admin-logout">Salir</button>
       </div>
     </div>
   </header>
 
   <!-- Pantalla de acceso denegado (si no es admin) -->
-  <div id="admin-access-denied" class="container section-pad d-none">
-    <div class="empty-state bg-white p-5 border text-center mx-auto" style="max-width: 600px;">
+  <div id="admin-access-denied" class="container py-5 d-none">
+    <div class="empty-state bg-white p-5 border text-center mx-auto shadow-sm" style="max-width: 600px; border-radius: 8px;">
       <div class="display-4 text-danger mb-3">🔒</div>
       <h1 class="h3 fw-bold mb-2">Acceso Restringido</h1>
-      <p class="text-secondary mb-4">Esta sección está reservada exclusivamente a los administradores de la tienda.</p>
-      <div class="d-flex justify-content-center gap-2">
-        <a href="login.html?redirect=admin.html" class="btn btn-primary">Iniciar sesión como administrador</a>
-        <a href="index.html" class="btn btn-outline-dark">Volver al inicio</a>
+      <p class="text-secondary mb-4" id="admin-denied-message">Esta sección está reservada exclusivamente a los administradores de la tienda.</p>
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <a href="login.html?redirect=admin.html" class="btn btn-primary" id="btn-admin-login-redirect">Iniciar sesión como administrador</a>
+        <a href="index.html" class="btn btn-outline-dark">Volver a la tienda</a>
       </div>
     </div>
   </div>
