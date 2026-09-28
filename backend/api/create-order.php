@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/stripe.php';
 require_once __DIR__ . '/_response.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_orders.php';
@@ -11,6 +12,8 @@ $userId = authenticatedUserId();
 $payload = requestPayload();
 $items = $payload['items'] ?? null;
 $shipping = $payload['shipping'] ?? null;
+$paymentIntentId = isset($payload['payment_intent_id']) && is_string($payload['payment_intent_id']) ? trim($payload['payment_intent_id']) : null;
+$paymentMethod = isset($payload['payment_method']) && is_string($payload['payment_method']) ? trim($payload['payment_method']) : 'card';
 
 if (!is_array($items) || $items === [] || count($items) > 50) {
     apiError('El carrito no es válido o está vacío.', 422);
@@ -138,14 +141,54 @@ try {
     $shippingCents = shippingCents($subtotalCents);
     $totalCents = $subtotalCents + $shippingCents;
 
-    // Insertar pedido en orders con datos de envío
+    // Validación y verificación del estado del pago
+    $stripeCfg = stripeConfig();
+    $paymentStatus = 'unpaid';
+    $orderStatus = 'pending';
+
+    if ($stripeCfg['ready']) {
+        if (empty($paymentIntentId)) {
+            throw new OrderValidationException('Se requiere la confirmación del pago con tarjeta antes de crear el pedido.');
+        }
+
+        require_once __DIR__ . '/../lib/StripeClient.php';
+        $stripeClient = new StripeClient($stripeCfg['secret_key']);
+        $intent = $stripeClient->getPaymentIntent($paymentIntentId);
+
+        $intentStatus = $intent['status'] ?? '';
+        if (!in_array($intentStatus, ['succeeded', 'processing'], true)) {
+            throw new OrderValidationException('El pago con tarjeta no se ha completado en Stripe (estado: ' . $intentStatus . ').');
+        }
+
+        $paidAmount = (int) ($intent['amount'] ?? 0);
+        if ($paidAmount !== $totalCents) {
+            throw new OrderValidationException('El importe del cobro (' . centsToMoney($paidAmount) . ' €) no coincide con el total del pedido (' . centsToMoney($totalCents) . ' €).');
+        }
+
+        $paymentStatus = 'paid';
+        $orderStatus = 'confirmed';
+        $paymentMethod = 'card';
+    } else {
+        // En modo de simulación (sin claves de Stripe en .env)
+        $paymentStatus = 'paid';
+        $orderStatus = 'confirmed';
+        $paymentMethod = 'card_mock';
+        if (empty($paymentIntentId)) {
+            $paymentIntentId = 'mock_pi_' . bin2hex(random_bytes(10));
+        }
+    }
+
+    // Insertar pedido en orders con datos de envío y pago
     $orderStatement = $db->prepare(
-        'INSERT INTO orders (user_id, status, shipping_cost, total, shipping_name, shipping_address, shipping_city, shipping_postal_code, shipping_province, shipping_phone, notes) ' .
-        'VALUES (:user_id, :status, :shipping_cost, :total, :shipping_name, :shipping_address, :shipping_city, :shipping_postal_code, :shipping_province, :shipping_phone, :notes)'
+        'INSERT INTO orders (user_id, status, payment_method, payment_status, payment_intent_id, shipping_cost, total, shipping_name, shipping_address, shipping_city, shipping_postal_code, shipping_province, shipping_phone, notes) ' .
+        'VALUES (:user_id, :status, :payment_method, :payment_status, :payment_intent_id, :shipping_cost, :total, :shipping_name, :shipping_address, :shipping_city, :shipping_postal_code, :shipping_province, :shipping_phone, :notes)'
     );
     $orderStatement->execute([
         'user_id' => $userId,
-        'status' => 'pending',
+        'status' => $orderStatus,
+        'payment_method' => $paymentMethod,
+        'payment_status' => $paymentStatus,
+        'payment_intent_id' => $paymentIntentId,
         'shipping_cost' => centsToMoney($shippingCents),
         'total' => centsToMoney($totalCents),
         'shipping_name' => $shippingName,
@@ -241,6 +284,9 @@ try {
             'shipping_province' => $shippingProvince,
             'shipping_phone' => $shippingPhone,
             'notes' => $shippingNotes,
+            'payment_method' => $paymentMethod,
+            'payment_status' => $paymentStatus,
+            'payment_intent_id' => $paymentIntentId,
         ];
 
         if ($customerEmail !== '') {
@@ -251,7 +297,13 @@ try {
         error_log('Error enviando notificaciones de pedido #' . $orderId . ': ' . $mailException->getMessage());
     }
 
-    jsonResponse(['success' => true, 'order_id' => $orderId, 'message' => 'Pedido creado correctamente.']);
+    jsonResponse([
+        'success' => true,
+        'order_id' => $orderId,
+        'payment_status' => $paymentStatus,
+        'status' => $orderStatus,
+        'message' => 'Pedido pagado y confirmado correctamente.',
+    ]);
 } catch (Throwable $exception) {
     if ($db->inTransaction()) {
         $db->rollBack();

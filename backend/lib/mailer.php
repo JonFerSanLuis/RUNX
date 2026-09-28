@@ -299,6 +299,10 @@ function sendOrderConfirmationEmail(array $order, array $items, string $customer
       <div style="font-size:18px; font-weight:800; border-top:2px solid #1a1d20; padding-top:8px; margin-top:8px;">
         Total: {$totalLabel}
       </div>
+      <div style="margin-top:8px; font-size:12px; color:#495057;">
+        Método: Tarjeta (Stripe)<br>
+        Estado del pago: <strong style="color:#198754;">✓ Pagado</strong>
+      </div>
     </td>
   </tr>
 </table>
@@ -344,6 +348,8 @@ function sendAdminNewOrderNotification(array $order, array $items, string $custo
   <p style="margin:0 0 6px 0;"><strong>Cliente:</strong> {$name} (&lt;{$email}&gt;)</p>
   <p style="margin:0 0 6px 0;"><strong>Teléfono:</strong> {$phone}</p>
   <p style="margin:0 0 6px 0;"><strong>Destino:</strong> {$address}, {$city}</p>
+  <p style="margin:0 0 6px 0;"><strong>Método de pago:</strong> Tarjeta (Stripe)</p>
+  <p style="margin:0 0 6px 0;"><strong>Estado del pago:</strong> <strong style="color:#198754;">✓ Pagado</strong></p>
   <p style="margin:0;"><strong>Importe total:</strong> <span style="font-size:16px; font-weight:800; color:#121518;">{$totalLabel}</span></p>
 </div>
 

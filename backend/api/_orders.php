@@ -37,3 +37,22 @@ function orderStatusLabel(string $status): string
         'cancelled' => 'Cancelado',
     ][$status] ?? $status;
 }
+
+function paymentStatusLabel(string $status): string
+{
+    return [
+        'unpaid' => 'Pendiente de pago',
+        'paid' => 'Pagado',
+        'failed' => 'Pago fallido',
+        'refunded' => 'Reembolsado',
+    ][$status] ?? $status;
+}
+
+function paymentMethodLabel(string $method): string
+{
+    return [
+        'card' => 'Tarjeta de crédito / débito (Stripe)',
+        'card_mock' => 'Tarjeta simulada (Modo de pruebas)',
+        'stripe' => 'Tarjeta de crédito / débito (Stripe)',
+    ][$method] ?? $method;
+}

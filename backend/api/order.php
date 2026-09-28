@@ -18,7 +18,7 @@ if ($orderId === false || $orderId === null) {
 try {
     $db = database();
     $statement = $db->prepare(
-        'SELECT id, status, shipping_cost, total, shipping_name, shipping_address, shipping_city, ' .
+        'SELECT id, status, payment_method, payment_status, payment_intent_id, shipping_cost, total, shipping_name, shipping_address, shipping_city, ' .
         'shipping_postal_code, shipping_province, shipping_phone, notes, created_at ' .
         'FROM orders WHERE id = :id AND user_id = :user_id LIMIT 1'
     );
@@ -45,6 +45,11 @@ try {
         'id' => (int) $order['id'],
         'status' => $order['status'],
         'status_label' => orderStatusLabel($order['status']),
+        'payment_method' => $order['payment_method'] ?? 'card',
+        'payment_method_label' => paymentMethodLabel($order['payment_method'] ?? 'card'),
+        'payment_status' => $order['payment_status'] ?? 'unpaid',
+        'payment_status_label' => paymentStatusLabel($order['payment_status'] ?? 'unpaid'),
+        'payment_intent_id' => $order['payment_intent_id'],
         'created_at' => $order['created_at'],
         'subtotal' => centsToMoney($subtotalCents),
         'shipping' => $order['shipping_cost'],

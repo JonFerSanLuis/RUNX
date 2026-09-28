@@ -14,4 +14,6 @@
 .site-search-form .btn{border-color:var(--line);border-left:0;padding:.4rem .65rem;color:var(--muted)}
 .site-search-form .btn:hover{color:var(--ink);background:var(--soft)}
 @media(max-width:991.98px){.site-search-form{max-width:100%;margin:.5rem 0}}
+.mock-card-box{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:6px}
+#payment-element{min-height:100px}
 

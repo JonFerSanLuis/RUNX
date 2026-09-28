@@ -90,6 +90,9 @@ CREATE TABLE orders (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id INT UNSIGNED NOT NULL,
   status ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending',
+  payment_method VARCHAR(50) NOT NULL DEFAULT 'card',
+  payment_status ENUM('unpaid', 'paid', 'failed', 'refunded') NOT NULL DEFAULT 'unpaid',
+  payment_intent_id VARCHAR(120) NULL,
   shipping_cost DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   total DECIMAL(10,2) NOT NULL,
   shipping_name VARCHAR(120) NOT NULL,
@@ -103,7 +106,8 @@ CREATE TABLE orders (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(id),
   INDEX idx_orders_user_created_at (user_id, created_at),
-  INDEX idx_orders_status (status)
+  INDEX idx_orders_status (status),
+  INDEX idx_orders_payment_intent (payment_intent_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE order_items (

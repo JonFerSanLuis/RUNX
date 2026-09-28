@@ -89,6 +89,73 @@ async function initCheckoutPage() {
     </div>
   `;
   checkout.hidden = false;
+  setupCheckoutPayment();
+}
+
+let stripeInstance = null;
+let stripeElements = null;
+let stripePaymentConfig = null;
+let stripeIntentData = null;
+
+async function setupCheckoutPayment() {
+  const loadingEl = document.getElementById('payment-loading');
+  const paymentEl = document.getElementById('payment-element');
+  const mockEl = document.getElementById('mock-payment-element');
+  const errorEl = document.getElementById('payment-error');
+
+  if (!loadingEl) return;
+
+  try {
+    // 1. Obtener configuración pública de Stripe
+    stripePaymentConfig = await apiRequest('backend/api/stripe-config.php');
+
+    // 2. Obtener PaymentIntent o Intent simulado desde el backend
+    const intentRes = await apiRequest('backend/api/stripe-create-intent.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: orderItemsPayload() }),
+    });
+
+    stripeIntentData = intentRes;
+
+    // 3. Comprobar si se puede inicializar Stripe Elements real
+    if (stripePaymentConfig.ready && typeof Stripe !== 'undefined' && stripePaymentConfig.public_key && !intentRes.mock) {
+      stripeInstance = Stripe(stripePaymentConfig.public_key);
+      stripeElements = stripeInstance.elements({
+        clientSecret: intentRes.client_secret,
+        appearance: {
+          theme: 'stripe',
+          variables: {
+            colorPrimary: '#235ee7',
+            colorBackground: '#ffffff',
+            colorText: '#111315',
+            colorDanger: '#dc3545',
+            fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+            borderRadius: '4px',
+          },
+        },
+      });
+
+      const paymentElement = stripeElements.create('payment', {
+        layout: 'tabs',
+      });
+
+      paymentElement.mount('#payment-element');
+      loadingEl.classList.add('d-none');
+      paymentEl.classList.remove('d-none');
+    } else {
+      // Modo de simulación local
+      loadingEl.classList.add('d-none');
+      if (mockEl) mockEl.classList.remove('d-none');
+    }
+  } catch (err) {
+    if (loadingEl) loadingEl.classList.add('d-none');
+    if (mockEl) mockEl.classList.remove('d-none');
+    if (errorEl) {
+      errorEl.textContent = 'Nota: Pasarela activa en modo local de pruebas (' + (err.message || 'Sin conexión externa') + ').';
+      errorEl.classList.remove('d-none');
+    }
+  }
 }
 
 function initCheckoutForm() {
@@ -104,8 +171,15 @@ function initCheckoutForm() {
     }
 
     const button = form.querySelector('button[type="submit"]');
+    const originalButtonHtml = button.innerHTML;
     button.disabled = true;
-    button.textContent = 'Confirmando pedido…';
+    button.innerHTML = `
+      <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      <span>Procesando pago seguro…</span>
+    `;
+
+    const paymentErrorEl = document.getElementById('payment-error');
+    if (paymentErrorEl) paymentErrorEl.classList.add('d-none');
 
     const shipping = {
       name: form.shipping_name.value.trim(),
@@ -117,23 +191,72 @@ function initCheckoutForm() {
       notes: form.shipping_notes ? form.shipping_notes.value.trim() : '',
     };
 
+    let paymentIntentId = null;
+
     try {
+      if (stripeInstance && stripeElements && stripeIntentData && !stripeIntentData.mock) {
+        // Confirmar pago directamente con Stripe Elements
+        const { error, paymentIntent } = await stripeInstance.confirmPayment({
+          elements: stripeElements,
+          redirect: 'if_required',
+          confirmParams: {
+            return_url: window.location.origin + window.location.pathname.replace('checkout.html', 'pedido.html'),
+            payment_method_data: {
+              billing_details: {
+                name: shipping.name,
+                phone: shipping.phone,
+                address: {
+                  line1: shipping.address,
+                  city: shipping.city,
+                  postal_code: shipping.postal_code,
+                  state: shipping.province,
+                  country: 'ES',
+                },
+              },
+            },
+          },
+        });
+
+        if (error) {
+          throw new Error(error.message || 'El pago no ha podido completarse.');
+        }
+
+        if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing')) {
+          paymentIntentId = paymentIntent.id;
+        } else {
+          throw new Error('El estado del pago es ' + (paymentIntent ? paymentIntent.status : 'desconocido') + '.');
+        }
+      } else {
+        // Simulación: retardo de 600ms para feedback visual realista
+        await new Promise(resolve => setTimeout(resolve, 600));
+        paymentIntentId = (stripeIntentData && stripeIntentData.id) ? stripeIntentData.id : ('mock_pi_' + Date.now());
+      }
+
+      // Crear y asentar el pedido en la base de datos
       const result = await apiRequest('backend/api/create-order.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items: orderItemsPayload(),
           shipping: shipping,
+          payment_intent_id: paymentIntentId,
+          payment_method: (stripeInstance && stripeElements && !stripeIntentData.mock) ? 'card' : 'card_mock',
         }),
       });
 
       localStorage.removeItem(CART_KEY);
       updateCartCount();
-      location.assign(`pedido.html?id=${result.order_id}`);
+      location.assign(`pedido.html?id=${result.order_id}&paid=1`);
     } catch (error) {
-      setFormMessage(form, error.message);
+      if (paymentErrorEl) {
+        paymentErrorEl.textContent = error.message;
+        paymentErrorEl.classList.remove('d-none');
+        paymentErrorEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        setFormMessage(form, error.message);
+      }
       button.disabled = false;
-      button.textContent = 'Confirmar pedido';
+      button.innerHTML = originalButtonHtml;
     }
   });
 }
@@ -196,15 +319,33 @@ async function initOrderDetailPage() {
       </div>
     ` : '';
 
+    const isJustPaid = new URLSearchParams(location.search).get('paid') === '1';
+    const paidAlert = isJustPaid ? `
+      <div class="alert alert-success d-flex align-items-center gap-3 mb-4 shadow-sm" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="text-success flex-shrink-0" viewBox="0 0 16 16">
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+        </svg>
+        <div>
+          <h4 class="h6 mb-1 fw-bold">¡Pago confirmado con éxito!</h4>
+          <p class="small mb-0 text-secondary">Hemos registrado tu compra y te hemos enviado el comprobante oficial a tu correo electrónico.</p>
+        </div>
+      </div>
+    ` : '';
+
     detail.querySelector('[data-order-detail]').innerHTML = `
       <section class="page-hero">
         <div class="container">
           <p class="eyebrow">Detalle del pedido</p>
           <h1 class="display-4">Pedido #${order.id}</h1>
-          <p class="text-secondary mb-0">${orderDate(order.created_at)} · <span class="badge bg-dark">${order.status_label}</span></p>
+          <p class="text-secondary mb-0">
+            ${orderDate(order.created_at)} · 
+            <span class="badge bg-dark">${order.status_label}</span> · 
+            <span class="badge bg-success-subtle text-success border border-success-subtle">✓ ${order.payment_status_label || 'Pagado'}</span>
+          </p>
         </div>
       </section>
       <section class="container section-pad">
+        ${paidAlert}
         <div class="row g-4 g-lg-5">
           <div class="col-lg-8">
             <h2 class="h4 mb-3">Productos</h2>
@@ -237,9 +378,19 @@ async function initOrderDetailPage() {
                 <strong>${Number(order.shipping) ? formatPrice(order.shipping) : 'Gratis'}</strong>
               </div>
               <hr>
-              <div class="d-flex justify-content-between h5">
+              <div class="d-flex justify-content-between h5 mb-3">
                 <span>Total</span>
                 <strong>${formatPrice(order.total)}</strong>
+              </div>
+              <div class="border-top pt-3 small text-secondary">
+                <div class="d-flex justify-content-between mb-1">
+                  <span>Método de pago:</span>
+                  <span class="text-dark fw-semibold">${order.payment_method_label || 'Tarjeta'}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span>Estado:</span>
+                  <span class="text-success fw-bold">${order.payment_status_label || 'Pagado'}</span>
+                </div>
               </div>
             </div>
             <a class="btn btn-outline-dark w-100 mt-4" href="cuenta.html#orders">Volver a mis pedidos</a>
