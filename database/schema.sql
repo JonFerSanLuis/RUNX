@@ -9,6 +9,7 @@ CREATE TABLE users (
   name VARCHAR(120) NOT NULL,
   email VARCHAR(190) NOT NULL,
   password VARCHAR(255) NOT NULL,
+  is_admin TINYINT(1) NOT NULL DEFAULT 0,
   phone VARCHAR(30) NULL,
   address VARCHAR(255) NULL,
   city VARCHAR(100) NULL,
@@ -102,6 +103,9 @@ CREATE TABLE orders (
   shipping_province VARCHAR(100) NOT NULL,
   shipping_phone VARCHAR(30) NOT NULL,
   notes TEXT NULL,
+  tracking_carrier VARCHAR(50) NULL,
+  tracking_number VARCHAR(100) NULL,
+  shipped_at DATETIME NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(id),
@@ -126,6 +130,23 @@ CREATE TABLE order_items (
   INDEX idx_order_items_product (product_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS product_reviews (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  rating TINYINT UNSIGNED NOT NULL,
+  title VARCHAR(120) NULL,
+  comment TEXT NOT NULL,
+  verified_purchase TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_reviews_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE KEY uq_user_product_review (product_id, user_id),
+  INDEX idx_reviews_product (product_id, rating),
+  INDEX idx_reviews_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS password_resets (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(190) NOT NULL,
@@ -135,5 +156,6 @@ CREATE TABLE IF NOT EXISTS password_resets (
   INDEX idx_password_resets_email (email),
   INDEX idx_password_resets_token (token)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 

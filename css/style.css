@@ -16,4 +16,7 @@
 @media(max-width:991.98px){.site-search-form{max-width:100%;margin:.5rem 0}}
 .mock-card-box{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:6px}
 #payment-element{min-height:100px}
+.star-picker{display:inline-flex;gap:4px;cursor:pointer;font-size:1.6rem;color:#cfd4d9;user-select:none}
+.star-picker .star{transition:color .15s ease}
+.star-picker .star.active{color:#dca616}
 

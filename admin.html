@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Panel de Administración | BRAND NAME</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+  <link href="css/responsive.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+  <!-- Header de administración -->
+  <header class="bg-dark text-white py-3 border-bottom border-secondary sticky-top" style="z-index: 1030;">
+    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-3">
+        <a class="brand text-white d-flex align-items-center gap-1" href="index.html">
+          <span class="brand-mark bg-white text-dark">B</span>
+          <span>BRAND NAME</span>
+        </a>
+        <span class="badge bg-primary text-uppercase px-2 py-1 small">Panel Admin</span>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <span class="small text-secondary d-none d-md-inline" data-admin-user>Cargando sesión…</span>
+        <a href="tienda.html" class="btn btn-outline-light btn-sm">Ver Tienda</a>
+        <button class="btn btn-outline-danger btn-sm" id="btn-admin-logout">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Pantalla de acceso denegado (si no es admin) -->
+  <div id="admin-access-denied" class="container section-pad d-none">
+    <div class="empty-state bg-white p-5 border text-center mx-auto" style="max-width: 600px;">
+      <div class="display-4 text-danger mb-3">🔒</div>
+      <h1 class="h3 fw-bold mb-2">Acceso Restringido</h1>
+      <p class="text-secondary mb-4">Esta sección está reservada exclusivamente a los administradores de la tienda.</p>
+      <div class="d-flex justify-content-center gap-2">
+        <a href="login.html?redirect=admin.html" class="btn btn-primary">Iniciar sesión como administrador</a>
+        <a href="index.html" class="btn btn-outline-dark">Volver al inicio</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido principal del panel -->
+  <main id="admin-main-content" class="container py-4 d-none">
+
+    <!-- Navegación de pestañas -->
+    <ul class="nav nav-pills mb-4 gap-2 flex-wrap" id="adminTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active fw-bold" id="tab-dashboard-btn" data-bs-toggle="pill" data-bs-target="#tab-dashboard" type="button" role="tab">
+          📊 Resumen y Métricas
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link fw-bold" id="tab-orders-btn" data-bs-toggle="pill" data-bs-target="#tab-orders" type="button" role="tab">
+          📦 Pedidos y Envíos <span class="badge bg-danger ms-1" id="badge-pending-orders">0</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link fw-bold" id="tab-products-btn" data-bs-toggle="pill" data-bs-target="#tab-products" type="button" role="tab">
+          👟 Catálogo e Inventario <span class="badge bg-secondary ms-1" id="badge-total-products">0</span>
+        </button>
+      </li>
+    </ul>
+
+    <!-- Contenido de las pestañas -->
+    <div class="tab-content" id="adminTabsContent">
+
+      <!-- PESTAÑA 1: DASHBOARD -->
+      <div class="tab-pane fade show active" id="tab-dashboard" role="tabpanel">
+        <!-- Tarjetas de métricas -->
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6 col-lg-3">
+            <div class="bg-white p-3 border rounded shadow-sm">
+              <span class="small text-secondary fw-semibold text-uppercase">Ventas Totales</span>
+              <div class="h3 fw-bold text-dark mt-1 mb-0" id="stat-revenue">0,00 €</div>
+              <small class="text-success fw-semibold">Pagos confirmados</small>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="bg-white p-3 border rounded shadow-sm">
+              <span class="small text-secondary fw-semibold text-uppercase">Total Pedidos</span>
+              <div class="h3 fw-bold text-dark mt-1 mb-0" id="stat-total-orders">0</div>
+              <small class="text-secondary">Histórico global</small>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="bg-white p-3 border rounded shadow-sm">
+              <span class="small text-secondary fw-semibold text-uppercase">Por Preparar / Enviar</span>
+              <div class="h3 fw-bold text-danger mt-1 mb-0" id="stat-pending-orders">0</div>
+              <small class="text-secondary">Pendientes de gestión</small>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="bg-white p-3 border rounded shadow-sm">
+              <span class="small text-secondary fw-semibold text-uppercase">Clientes Registrados</span>
+              <div class="h3 fw-bold text-dark mt-1 mb-0" id="stat-customers">0</div>
+              <small class="text-secondary">Cuentas creadas</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <!-- Alertas de stock bajo -->
+          <div class="col-lg-5">
+            <div class="bg-white p-4 border rounded shadow-sm h-100">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 fw-bold mb-0 text-danger">⚠️ Alertas de Stock Bajo</h2>
+                <span class="badge bg-warning text-dark">≤ 5 unidades</span>
+              </div>
+              <div id="dashboard-low-stock-list">
+                <p class="text-secondary small">Cargando inventario…</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Últimos pedidos -->
+          <div class="col-lg-7">
+            <div class="bg-white p-4 border rounded shadow-sm h-100">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 fw-bold mb-0">Últimos Pedidos Recibidos</h2>
+                <button class="btn btn-sm btn-link text-decoration-none" onclick="document.getElementById('tab-orders-btn').click();">Ver todos &rarr;</button>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light small">
+                    <tr>
+                      <th>Pedido</th>
+                      <th>Cliente</th>
+                      <th>Importe</th>
+                      <th>Estado</th>
+                      <th class="text-end">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboard-recent-orders-list">
+                    <tr><td colspan="5" class="text-center text-secondary py-3">Cargando pedidos…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 2: GESTIÓN DE PEDIDOS -->
+      <div class="tab-pane fade" id="tab-orders" role="tabpanel">
+        <div class="bg-white p-4 border rounded shadow-sm">
+          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+              <h2 class="h4 fw-bold mb-1">Gestión de Pedidos</h2>
+              <p class="text-secondary small mb-0">Gestiona envíos, transportistas y números de seguimiento.</p>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-dark btn-sm" id="btn-refresh-orders">🔄 Actualizar</button>
+            </div>
+          </div>
+
+          <!-- Filtros y buscador de pedidos -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6 col-lg-4">
+              <div class="input-group">
+                <span class="input-group-text bg-white">🔍</span>
+                <input type="text" class="form-control" id="orders-search-input" placeholder="Buscar por # pedido, nombre, email o tracking…">
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-8">
+              <div class="d-flex gap-1 flex-wrap" id="orders-status-filters">
+                <button class="btn btn-sm btn-dark" data-filter="all">Todos</button>
+                <button class="btn btn-sm btn-outline-dark" data-filter="confirmed">Confirmados</button>
+                <button class="btn btn-sm btn-outline-dark" data-filter="pending">Pendientes</button>
+                <button class="btn btn-sm btn-outline-dark" data-filter="shipped">Enviados</button>
+                <button class="btn btn-sm btn-outline-dark" data-filter="delivered">Entregados</button>
+                <button class="btn btn-sm btn-outline-dark" data-filter="cancelled">Cancelados</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla de pedidos -->
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light small">
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Cliente</th>
+                  <th>Destino</th>
+                  <th>Artículos</th>
+                  <th>Total</th>
+                  <th>Pago</th>
+                  <th>Estado</th>
+                  <th class="text-end">Gestión</th>
+                </tr>
+              </thead>
+              <tbody id="orders-table-body">
+                <tr><td colspan="9" class="text-center py-4 text-secondary">Cargando pedidos…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 3: GESTIÓN DE PRODUCTOS -->
+      <div class="tab-pane fade" id="tab-products" role="tabpanel">
+        <div class="bg-white p-4 border rounded shadow-sm">
+          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+              <h2 class="h4 fw-bold mb-1">Catálogo de Productos</h2>
+              <p class="text-secondary small mb-0">Crea productos, actualiza precios, descripciones y controla el stock.</p>
+            </div>
+            <div>
+              <button class="btn btn-primary btn-sm" id="btn-open-create-product">
+                + Añadir Nuevo Producto
+              </button>
+            </div>
+          </div>
+
+          <!-- Filtros de productos -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6 col-lg-4">
+              <input type="text" class="form-control" id="products-search-input" placeholder="Buscar por nombre…">
+            </div>
+            <div class="col-md-6 col-lg-4">
+              <select class="form-select" id="products-category-filter">
+                <option value="all">Todas las categorías</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tabla de productos -->
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light small">
+                <tr>
+                  <th style="width: 60px;">Foto</th>
+                  <th>Nombre</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Opiniones</th>
+                  <th>Estado</th>
+                  <th class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="products-table-body">
+                <tr><td colspan="8" class="text-center py-4 text-secondary">Cargando catálogo…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- MODAL: GESTIÓN DE PEDIDO / SEGUIMIENTO -->
+  <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold" id="orderModalTitle">Detalle del Pedido</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body" id="orderModalBody">
+          <!-- Contenido dinámico del pedido -->
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="btn-save-order-status">Guardar Cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CREAR / EDITAR PRODUCTO -->
+  <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold" id="productModalTitle">Producto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <form id="product-form" novalidate>
+          <div class="modal-body">
+            <input type="hidden" name="id" id="prodId">
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label for="prodName" class="form-label fw-semibold small">Nombre del producto *</label>
+                <input type="text" class="form-control" id="prodName" name="name" required maxlength="180">
+              </div>
+              <div class="col-md-4">
+                <label for="prodCategory" class="form-label fw-semibold small">Categoría *</label>
+                <select class="form-select" id="prodCategory" name="category_id" required></select>
+              </div>
+              <div class="col-md-4">
+                <label for="prodPrice" class="form-label fw-semibold small">Precio de venta (€) *</label>
+                <input type="number" step="0.01" min="0.01" class="form-control" id="prodPrice" name="price" required placeholder="0.00">
+              </div>
+              <div class="col-md-4">
+                <label for="prodOldPrice" class="form-label fw-semibold small">Precio anterior / tachado (€)</label>
+                <input type="number" step="0.01" min="0.01" class="form-control" id="prodOldPrice" name="old_price" placeholder="Opcional">
+              </div>
+              <div class="col-md-4">
+                <label for="prodStock" class="form-label fw-semibold small">Stock disponible *</label>
+                <input type="number" min="0" class="form-control" id="prodStock" name="stock" required value="10">
+              </div>
+              <div class="col-12">
+                <label for="prodImageUrl" class="form-label fw-semibold small">Ruta de imagen</label>
+                <input type="text" class="form-control" id="prodImageUrl" name="image_url" placeholder="assets/images/... o URL externa">
+              </div>
+              <div class="col-12">
+                <label for="prodDescription" class="form-label fw-semibold small">Descripción técnica</label>
+                <textarea class="form-control" id="prodDescription" name="description" rows="3" placeholder="Detalles de tejido, transpirabilidad, uso recomendado..."></textarea>
+              </div>
+              <div class="col-12">
+                <div class="d-flex gap-4 flex-wrap mt-2 p-3 bg-light border rounded">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="prodActive" name="active" checked>
+                    <label class="form-check-label small fw-semibold" for="prodActive">Activo en tienda</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="prodFeatured" name="featured">
+                    <label class="form-check-label small fw-semibold" for="prodFeatured">Destacado en Portada</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="prodBestseller" name="bestseller">
+                    <label class="form-check-label small fw-semibold" for="prodBestseller">Superventas</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="prodIsNew" name="is_new">
+                    <label class="form-check-label small fw-semibold" for="prodIsNew">Novedad</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-product">Guardar Producto</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

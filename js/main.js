@@ -102,8 +102,11 @@ function updateAuthNavigation(user) {
   const redirectParam = safeRedirect ? `?redirect=${encodeURIComponent(safeRedirect)}` : '';
   document.querySelectorAll('[data-auth-nav]').forEach(container => {
     const cart = `<a href="${root}carrito.html" class="cart-link d-none d-lg-inline-block" aria-label="Ver carrito">Carrito <span class="cart-badge" data-cart-count>0</span></a>`;
+    const adminLink = (user && user.is_admin)
+      ? `<a href="${root}admin.html" class="badge bg-dark text-white text-decoration-none px-2 py-1 small d-inline-flex align-items-center gap-1">⚙️ Admin</a>`
+      : '';
     container.innerHTML = user
-      ? `<a href="${root}cuenta.html" class="small fw-semibold">Mi cuenta</a><button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" data-request-logout>Cerrar sesión</button>${cart}`
+      ? `${adminLink}<a href="${root}cuenta.html" class="small fw-semibold">Mi cuenta</a><button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" data-request-logout>Cerrar sesión</button>${cart}`
       : `<a href="${root}login.html${redirectParam}" class="small fw-semibold">Iniciar sesión</a><a href="${root}registro.html${redirectParam}" class="small fw-semibold">Crear cuenta</a>${cart}`;
   });
   updateCartCount();

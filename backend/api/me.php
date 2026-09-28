@@ -17,7 +17,7 @@ if (!is_int($userId) && !ctype_digit((string) $userId)) {
 
 try {
     $statement = database()->prepare(
-        'SELECT id, name, email, phone, address, city, postal_code, province FROM users WHERE id = :id LIMIT 1'
+        'SELECT id, name, email, is_admin, phone, address, city, postal_code, province FROM users WHERE id = :id LIMIT 1'
     );
     $statement->execute(['id' => (int) $userId]);
     $user = $statement->fetch();
@@ -32,6 +32,7 @@ try {
             'id' => (int) $user['id'],
             'name' => $user['name'],
             'email' => $user['email'],
+            'is_admin' => (int) ($user['is_admin'] ?? 0) === 1,
             'phone' => $user['phone'] ?? '',
             'address' => $user['address'] ?? '',
             'city' => $user['city'] ?? '',

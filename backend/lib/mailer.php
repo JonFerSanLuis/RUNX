@@ -400,3 +400,45 @@ HTML;
     $html = emailLayout($emailSubject, "Nuevo mensaje de cliente", $content);
     return sendEmail($adminEmail, 'Administrador', $emailSubject, $html);
 }
+
+/**
+ * Envía notificación al cliente cuando su pedido ha sido enviado.
+ */
+function sendOrderShippedEmail(array $order, string $customerEmail, string $customerName, ?string $carrier = null, ?string $trackingNumber = null): bool
+{
+    $config = mailConfig();
+    $orderId = (int) $order['id'];
+    $orderUrl = $config['app_url'] . '/pedido.html?id=' . $orderId;
+    $name = htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8');
+    $carrierClean = !empty($carrier) ? htmlspecialchars($carrier, ENT_QUOTES, 'UTF-8') : 'Agencia de transporte';
+    $trackingClean = !empty($trackingNumber) ? htmlspecialchars($trackingNumber, ENT_QUOTES, 'UTF-8') : null;
+
+    $trackingBlock = $trackingClean ? <<<HTML
+<div class="info-card" style="margin:20px 0; border-left:4px solid #198754; background:#f4fbf7;">
+  <strong style="display:block; margin-bottom:6px; color:#198754; font-size:15px;">Información de seguimiento:</strong>
+  <p style="margin:0 0 4px 0;"><strong>Empresa de mensajería:</strong> {$carrierClean}</p>
+  <p style="margin:0;"><strong>Número de seguimiento (tracking):</strong> <span style="font-family:monospace; font-size:15px; font-weight:700; background:#e8f7ee; padding:3px 7px; border-radius:3px; color:#0f5132;">{$trackingClean}</span></p>
+</div>
+HTML : <<<HTML
+<div class="info-card" style="margin:20px 0;">
+  <p style="margin:0;">Tu paquete ha sido gestionado con <strong>{$carrierClean}</strong> y el plazo de entrega estimado es de 24/48 horas laborables.</p>
+</div>
+HTML;
+
+    $content = <<<HTML
+<h2 style="margin-top:0; font-size:20px; font-weight:800; color:#121518;">📦 ¡Tu pedido #{$orderId} va en camino!</h2>
+<p>Hola, {$name}. Te confirmamos que hemos empaquetado tu equipamiento de running y ya se encuentra en manos de la agencia de transporte.</p>
+
+{$trackingBlock}
+
+<p style="text-align:center; margin:30px 0;">
+  <a href="{$orderUrl}" class="btn">Ver estado del pedido</a>
+</p>
+
+<p style="font-size:13px; color:#697078; margin-top:24px;">Si tienes cualquier duda con tu entrega o necesitas avisar al repartidor, puedes responder directamente a este correo.</p>
+HTML;
+
+    $subject = "📦 Tu pedido #{$orderId} ha sido enviado - {$config['from_name']}";
+    $html = emailLayout($subject, "Envío del pedido #{$orderId}", $content);
+    return sendEmail($customerEmail, $customerName, $subject, $html);
+}

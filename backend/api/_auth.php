@@ -55,3 +55,18 @@ function authenticatedUserId(): int
 
     return (int) $userId;
 }
+
+function requireAdmin(): int
+{
+    $userId = authenticatedUserId();
+    require_once __DIR__ . '/../config/database.php';
+    $stmt = database()->prepare('SELECT is_admin FROM users WHERE id = :id LIMIT 1');
+    $stmt->execute(['id' => $userId]);
+    $isAdmin = (int) $stmt->fetchColumn();
+    if ($isAdmin !== 1) {
+        apiError('Acceso denegado: se requieren permisos de administrador.', 403);
+    }
+
+    return $userId;
+}
+
