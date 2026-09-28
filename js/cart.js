@@ -13,27 +13,53 @@ function saveCart(cart) {
   updateCartCount();
 }
 
-function addToCart(productId, quantity = 1, variant = {}) {
+async function addToCart(productId, quantity = 1, variant = {}) {
   const cart = getCart();
   const size = variant.size || '';
   const color = variant.color || '';
   const key = `${productId}-${size}-${color}`;
   const found = cart.find(item => item.key === key);
+  const currentQty = found ? found.quantity : 0;
+  let addQty = Math.max(1, Number(quantity) || 1);
+
+  try {
+    const product = await getProduct(productId);
+    if (product) {
+      if (product.stock <= 0) {
+        showToast('Este producto se encuentra agotado.');
+        return;
+      }
+      if (currentQty + addQty > product.stock) {
+        const remaining = product.stock - currentQty;
+        if (remaining <= 0) {
+          showToast(`Ya tienes el máximo disponible en tu carrito (${product.stock} unidades).`);
+          return;
+        }
+        addQty = remaining;
+        showToast(`Se han añadido ${addQty} unidades (stock máximo: ${product.stock}).`);
+      } else {
+        showToast('Producto añadido al carrito');
+      }
+    } else {
+      showToast('Producto añadido al carrito');
+    }
+  } catch (e) {
+    showToast('Producto añadido al carrito');
+  }
 
   if (found) {
-    found.quantity += Number(quantity);
+    found.quantity += addQty;
   } else {
     cart.push({
       key,
       productId: Number(productId),
-      quantity: Number(quantity),
+      quantity: addQty,
       size,
       color,
     });
   }
 
   saveCart(cart);
-  showToast('Producto añadido al carrito');
 }
 
 function removeFromCart(key) {
@@ -41,11 +67,21 @@ function removeFromCart(key) {
   renderCart();
 }
 
-function updateQuantity(key, quantity) {
+async function updateQuantity(key, quantity) {
   const cart = getCart();
   const item = cart.find(item => item.key === key);
   if (item) {
-    item.quantity = Math.max(1, Number(quantity) || 1);
+    let targetQty = Math.max(1, Number(quantity) || 1);
+    try {
+      const product = await getProduct(item.productId);
+      if (product && targetQty > product.stock) {
+        showToast(`Stock máximo alcanzado (${product.stock} disponibles).`);
+        targetQty = product.stock;
+      }
+    } catch (e) {
+      // Ignorar si no se puede comprobar en este instante
+    }
+    item.quantity = targetQty;
     saveCart(cart);
   }
   renderCart();

@@ -192,6 +192,32 @@ try {
         }
     }
 
+    // Si el usuario registrado aún no tiene datos de entrega en su perfil, guardarlos automáticamente
+    if ($userId !== null) {
+        $updateUser = $db->prepare(
+            'UPDATE users SET ' .
+            'phone = CASE WHEN (phone IS NULL OR phone = "") AND :phone_check != "" THEN :phone_val ELSE phone END, ' .
+            'address = CASE WHEN (address IS NULL OR address = "") AND :address_check != "" THEN :address_val ELSE address END, ' .
+            'city = CASE WHEN (city IS NULL OR city = "") AND :city_check != "" THEN :city_val ELSE city END, ' .
+            'postal_code = CASE WHEN (postal_code IS NULL OR postal_code = "") AND :postal_code_check != "" THEN :postal_code_val ELSE postal_code END, ' .
+            'province = CASE WHEN (province IS NULL OR province = "") AND :province_check != "" THEN :province_val ELSE province END ' .
+            'WHERE id = :user_id'
+        );
+        $updateUser->execute([
+            'phone_check' => $shippingPhone,
+            'phone_val' => $shippingPhone !== '' ? $shippingPhone : null,
+            'address_check' => $shippingAddress,
+            'address_val' => $shippingAddress !== '' ? $shippingAddress : null,
+            'city_check' => $shippingCity,
+            'city_val' => $shippingCity !== '' ? $shippingCity : null,
+            'postal_code_check' => $shippingPostalCode,
+            'postal_code_val' => $shippingPostalCode !== '' ? $shippingPostalCode : null,
+            'province_check' => $shippingProvince,
+            'province_val' => $shippingProvince !== '' ? $shippingProvince : null,
+            'user_id' => $userId,
+        ]);
+    }
+
     $db->commit();
     jsonResponse(['success' => true, 'order_id' => $orderId, 'message' => 'Pedido creado correctamente.']);
 } catch (Throwable $exception) {

@@ -26,6 +26,10 @@ function shopParameters() {
     over25: { min_price: 25.01 },
   };
 
+  const searchInput = form.querySelector('[name="q"]');
+  const urlParam = new URLSearchParams(location.search).get('q') || '';
+  const searchQuery = searchInput && searchInput.value.trim() !== '' ? searchInput.value.trim() : urlParam.trim();
+
   return {
     page: currentPage,
     limit: PAGE_SIZE,
@@ -34,6 +38,7 @@ function shopParameters() {
       document.querySelector('#sortProductsDesktop')?.value ||
       'relevance',
     category: categorySlug(category),
+    q: searchQuery,
     color: filterValues(form, 'color').join(','),
     size: filterValues(form, 'size').join(','),
     ...(prices[price] || {}),
@@ -81,14 +86,18 @@ async function renderShop() {
   try {
     const body = await loadProducts(shopParameters());
     const products = body.data;
+    const searchQuery = shopParameters().q;
+    const searchNotice = searchQuery
+      ? `<div class="col-12 mb-2"><div class="alert alert-light border d-flex justify-content-between align-items-center py-2 px-3"><span>Búsqueda: <strong>${searchQuery}</strong></span><button type="button" class="btn btn-outline-dark btn-sm py-1" data-reset-filters>Limpiar búsqueda</button></div></div>`
+      : '';
 
     grid.innerHTML = products.length
-      ? products.map(product => `<div class="col-6 col-md-4 col-lg-3">${productCard(product)}</div>`).join('')
+      ? `${searchNotice}${products.map(product => `<div class="col-6 col-md-4 col-lg-3">${productCard(product)}</div>`).join('')}`
       : `
         <div class="col-12">
           <div class="empty-state">
-            <h2 class="h4">No hay productos con estos filtros</h2>
-            <button class="btn btn-outline-dark mt-2" data-reset-filters>Limpiar filtros</button>
+            <h2 class="h4">${searchQuery ? `No hay productos para "${searchQuery}"` : 'No hay productos con estos filtros'}</h2>
+            <a href="tienda.html" class="btn btn-outline-dark mt-2">Ver todo el catálogo</a>
           </div>
         </div>
       `;
@@ -133,12 +142,20 @@ function copyFilterState(from, to) {
       input.checked = values.includes(input.value);
     });
   });
+  const fromQ = from.querySelector('[name="q"]');
+  const toQ = to.querySelector('[name="q"]');
+  if (fromQ && toQ) toQ.value = fromQ.value;
 }
 
 function resetFilters() {
   document.querySelectorAll('[data-filter-form] input, [data-mobile-filter-form] input').forEach(input => {
-    input.checked = false;
+    if (input.type === 'radio' || input.type === 'checkbox') {
+      input.checked = false;
+    } else {
+      input.value = '';
+    }
   });
+  document.querySelectorAll('.site-search-form input[name="q"]').forEach(input => input.value = '');
   history.replaceState({}, '', 'tienda.html');
   currentPage = 1;
   renderShop();
@@ -229,12 +246,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  const presetSearch = new URLSearchParams(location.search).get('q');
+  if (presetSearch) {
+    const qInput = form.querySelector('[name="q"]');
+    if (qInput) qInput.value = presetSearch;
+  }
+
   // 3. Crear los filtros móviles a partir del formulario ya poblado
   createMobileFilters();
 
   // 4. Listeners para cambios
-  form.addEventListener('change', () => {
+  form.addEventListener('change', event => {
+    if (event.target.name === 'q') return;
     currentPage = 1;
+    renderShop();
+  });
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    currentPage = 1;
+    const qVal = form.querySelector('[name="q"]')?.value.trim();
+    if (qVal) {
+      history.replaceState({}, '', `tienda.html?q=${encodeURIComponent(qVal)}`);
+    } else {
+      history.replaceState({}, '', 'tienda.html');
+    }
     renderShop();
   });
 

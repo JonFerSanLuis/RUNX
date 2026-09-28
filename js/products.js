@@ -4,8 +4,22 @@ const CATEGORIES_API = 'backend/api/categories.php';
 let PRODUCTS = [];
 
 function productCard(product) {
-  const badge = product.new ? 'Novedad' : product.bestseller ? 'Más vendido' : '';
+  let badge = '';
+  if (product.stock <= 0) {
+    badge = 'Agotado';
+  } else if (product.stock <= 3) {
+    badge = 'Últimas unidades';
+  } else if (product.new) {
+    badge = 'Novedad';
+  } else if (product.bestseller) {
+    badge = 'Más vendido';
+  }
+
   const image = product.images?.[0] || 'assets/images/products-studio.png';
+  const isOutOfStock = product.stock <= 0;
+  const buttonMarkup = isOutOfStock
+    ? '<button class="btn btn-secondary btn-sm w-100" disabled>Agotado</button>'
+    : `<button class="btn btn-dark btn-sm w-100 add-card" data-id="${product.id}">Añadir al carrito</button>`;
 
   return `
     <article class="product-card">
@@ -26,7 +40,7 @@ function productCard(product) {
           <span class="price">${formatPrice(product.price)}</span>
           ${product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)}</span>` : ''}
         </div>
-        <button class="btn btn-dark btn-sm w-100 add-card" data-id="${product.id}">Añadir al carrito</button>
+        ${buttonMarkup}
       </div>
     </article>
   `;

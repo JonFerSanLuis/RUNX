@@ -80,6 +80,17 @@ try {
         $where[] = 'c.slug = :category';
         $params['category'] = $category;
     }
+    $search = filter_input(INPUT_GET, 'q', FILTER_UNSAFE_RAW);
+    if (is_string($search)) {
+        $search = trim($search);
+        if ($search !== '' && mb_strlen($search) <= 100) {
+            $where[] = '(p.name LIKE :search_1 OR p.description LIKE :search_2 OR c.name LIKE :search_3)';
+            $searchTerm = "%{$search}%";
+            $params['search_1'] = $searchTerm;
+            $params['search_2'] = $searchTerm;
+            $params['search_3'] = $searchTerm;
+        }
+    }
     $minPrice = filter_input(INPUT_GET, 'min_price', FILTER_VALIDATE_FLOAT);
     if ($minPrice !== false && $minPrice !== null && $minPrice >= 0) {
         $where[] = 'p.price >= :min_price';

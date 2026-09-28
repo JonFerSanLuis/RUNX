@@ -4,7 +4,44 @@ function headerTemplate(){
   const page=location.pathname.split('/').pop()||'index.html';
   const root=location.pathname.includes('/legal/')?'../':'';
   const active=key=>page===key?'active':'';
-  return `<header class="site-header sticky-top"><nav class="navbar navbar-expand-lg"><div class="container"><a class="navbar-brand brand" href="${root}index.html"><span class="brand-mark">B</span>BRAND NAME</a><a href="${root}carrito.html" class="cart-link d-lg-none me-2" aria-label="Ver carrito">Carrito <span class="cart-badge" data-cart-count>0</span></a><button class="navbar-toggler border-0 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="Abrir menú"><span class="navbar-toggler-icon"></span></button><div class="collapse navbar-collapse" id="siteNav"><ul class="navbar-nav mx-auto gap-lg-2"><li class="nav-item"><a class="nav-link ${active('index.html')}" href="${root}index.html">Inicio</a></li><li class="nav-item"><a class="nav-link ${active('tienda.html')||active('producto.html')}" href="${root}tienda.html">Tienda</a></li><li class="nav-item"><a class="nav-link" href="${root}tienda.html?category=Calcetines">Categorías</a></li><li class="nav-item"><a class="nav-link ${active('sobre-nosotros.html')}" href="${root}sobre-nosotros.html">Sobre nosotros</a></li><li class="nav-item"><a class="nav-link ${active('contacto.html')}" href="${root}contacto.html">Contacto</a></li><li class="nav-item d-lg-none"><a class="nav-link ${active('faq.html')}" href="${root}faq.html">FAQ</a></li></ul><div class="d-flex align-items-center gap-3" data-auth-nav><a href="${root}login.html" class="small fw-semibold">Iniciar sesión</a><a href="${root}carrito.html" class="cart-link d-none d-lg-inline-block" aria-label="Ver carrito">Carrito <span class="cart-badge" data-cart-count>0</span></a></div></div></div></nav></header>`;
+  const currentQ = new URLSearchParams(location.search).get('q') || '';
+  const searchVal = currentQ.replace(/"/g, '&quot;');
+  return `<header class="site-header sticky-top">
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        <a class="navbar-brand brand" href="${root}index.html"><span class="brand-mark">B</span>BRAND NAME</a>
+        <a href="${root}carrito.html" class="cart-link d-lg-none me-2" aria-label="Ver carrito">Carrito <span class="cart-badge" data-cart-count>0</span></a>
+        <button class="navbar-toggler border-0 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="Abrir menú">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="siteNav">
+          <ul class="navbar-nav mx-auto gap-lg-2">
+            <li class="nav-item"><a class="nav-link ${active('index.html')}" href="${root}index.html">Inicio</a></li>
+            <li class="nav-item"><a class="nav-link ${active('tienda.html')||active('producto.html')}" href="${root}tienda.html">Tienda</a></li>
+            <li class="nav-item"><a class="nav-link" href="${root}tienda.html?category=Calcetines">Categorías</a></li>
+            <li class="nav-item"><a class="nav-link ${active('sobre-nosotros.html')}" href="${root}sobre-nosotros.html">Sobre nosotros</a></li>
+            <li class="nav-item"><a class="nav-link ${active('contacto.html')}" href="${root}contacto.html">Contacto</a></li>
+            <li class="nav-item d-lg-none"><a class="nav-link ${active('faq.html')}" href="${root}faq.html">FAQ</a></li>
+          </ul>
+          <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3">
+            <form class="site-search-form d-flex my-2 my-lg-0" action="${root}tienda.html" method="GET" role="search">
+              <div class="input-group input-group-sm">
+                <input class="form-control" type="search" name="q" value="${searchVal}" placeholder="Buscar productos…" aria-label="Buscar productos">
+                <button class="btn btn-outline-dark" type="submit" aria-label="Buscar">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                </button>
+              </div>
+            </form>
+            <div class="d-flex align-items-center gap-3" data-auth-nav>
+              <a href="${root}login.html" class="small fw-semibold">Iniciar sesión</a>
+              <a href="${root}registro.html" class="small fw-semibold">Crear cuenta</a>
+              <a href="${root}carrito.html" class="cart-link d-none d-lg-inline-block" aria-label="Ver carrito">Carrito <span class="cart-badge" data-cart-count>0</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>`;
 }
 
 function footerTemplate(){
@@ -42,13 +79,32 @@ async function apiRequest(url, options = {}) {
   return body;
 }
 
+function getSafeRedirectUrl() {
+  const params = new URLSearchParams(location.search);
+  const redirect = params.get('redirect');
+  if (!redirect) return null;
+  const trimmed = redirect.trim();
+  if (!trimmed) return null;
+  // Disallow absolute protocols or scheme-relative paths (open redirect prevention)
+  if (/^(?:[a-zA-Z][a-zA-Z0-9+.-]*:|\/\/)/.test(trimmed)) {
+    return null;
+  }
+  // Disallow backslashes
+  if (trimmed.includes('\\')) {
+    return null;
+  }
+  return trimmed;
+}
+
 function updateAuthNavigation(user) {
   const root = location.pathname.includes('/legal/') ? '../' : '';
+  const safeRedirect = getSafeRedirectUrl();
+  const redirectParam = safeRedirect ? `?redirect=${encodeURIComponent(safeRedirect)}` : '';
   document.querySelectorAll('[data-auth-nav]').forEach(container => {
     const cart = `<a href="${root}carrito.html" class="cart-link d-none d-lg-inline-block" aria-label="Ver carrito">Carrito <span class="cart-badge" data-cart-count>0</span></a>`;
     container.innerHTML = user
       ? `<a href="${root}cuenta.html" class="small fw-semibold">Mi cuenta</a><button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" data-request-logout>Cerrar sesión</button>${cart}`
-      : `<a href="${root}login.html" class="small fw-semibold">Iniciar sesión</a><a href="${root}registro.html" class="small fw-semibold">Crear cuenta</a>${cart}`;
+      : `<a href="${root}login.html${redirectParam}" class="small fw-semibold">Iniciar sesión</a><a href="${root}registro.html${redirectParam}" class="small fw-semibold">Crear cuenta</a>${cart}`;
   });
   updateCartCount();
 }
@@ -87,13 +143,22 @@ function refreshFieldValidity(form) {
 }
 
 function initAuthenticationForms() {
+  const safeRedirect = getSafeRedirectUrl();
+  if (safeRedirect) {
+    document.querySelectorAll('[data-auth-switch]').forEach(link => {
+      const baseHref = link.getAttribute('href').split('?')[0];
+      link.setAttribute('href', `${baseHref}?redirect=${encodeURIComponent(safeRedirect)}`);
+    });
+  }
+
   const loginForm = document.querySelector('[data-login-form]');
   loginForm && refreshFieldValidity(loginForm);
   loginForm?.addEventListener('submit', async event => {
     event.preventDefault(); loginForm.classList.add('was-validated'); if (!loginForm.checkValidity()) return;
     try {
       await apiRequest('backend/api/login.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: loginForm.email.value, password: loginForm.password.value }) });
-      location.assign('cuenta.html');
+      const target = getSafeRedirectUrl();
+      location.assign(target || 'cuenta.html');
     } catch (error) { setFormMessage(loginForm, error.message); }
   });
 
@@ -106,7 +171,8 @@ function initAuthenticationForms() {
       setFormMessage(registerForm, 'Cuenta creada correctamente. Redirigiendo al inicio de sesión…', 'success');
       registerForm.querySelectorAll('input').forEach(input => input.classList.remove('is-valid', 'is-invalid'));
       registerForm.classList.remove('was-validated');
-      window.setTimeout(() => location.assign('login.html'), 1400);
+      const target = safeRedirect ? `login.html?redirect=${encodeURIComponent(safeRedirect)}` : 'login.html';
+      window.setTimeout(() => location.assign(target), 1400);
     } catch (error) { setFormMessage(registerForm, error.message); }
   });
 
@@ -115,10 +181,18 @@ function initAuthenticationForms() {
   profileForm?.addEventListener('submit', async event => {
     event.preventDefault(); profileForm.classList.add('was-validated'); if (!profileForm.checkValidity()) return;
     try {
-      const result = await apiRequest('backend/api/update-profile.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: profileForm.name.value }) });
-      document.querySelector('[data-user-name]').textContent = result.user.name;
+      const payload = {
+        name: profileForm.name.value.trim(),
+        phone: profileForm.phone ? profileForm.phone.value.trim() : '',
+        address: profileForm.address ? profileForm.address.value.trim() : '',
+        postal_code: profileForm.postal_code ? profileForm.postal_code.value.trim() : '',
+        city: profileForm.city ? profileForm.city.value.trim() : '',
+        province: profileForm.province ? profileForm.province.value.trim() : '',
+      };
+      const result = await apiRequest('backend/api/update-profile.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       setFormMessage(profileForm, result.message, 'success');
-      loadCurrentUser();
+      await loadCurrentUser();
+      initAccountPage();
     } catch (error) { setFormMessage(profileForm, error.message); }
   });
 
@@ -155,9 +229,30 @@ async function initAccountPage() {
   if (!account) return;
   const session = await loadCurrentUser();
   if (!session.authenticated) { location.replace('login.html'); return; }
-  account.querySelector('[data-user-name]').textContent = session.user.name;
-  account.querySelector('[data-user-email]').textContent = session.user.email;
-  account.querySelector('[data-profile-name]').value = session.user.name;
+  const u = session.user || {};
+  account.querySelector('[data-user-name]').textContent = u.name || '';
+  account.querySelector('[data-user-email]').textContent = u.email || '';
+  const phoneDisplay = account.querySelector('[data-user-phone]');
+  if (phoneDisplay) phoneDisplay.textContent = u.phone || 'No indicado';
+
+  const addressSummary = account.querySelector('[data-user-address-summary]');
+  if (addressSummary) {
+    const parts = [u.address, [u.postal_code, u.city].filter(Boolean).join(' '), u.province].filter(Boolean);
+    addressSummary.textContent = parts.length ? parts.join(', ') : 'No hay dirección guardada.';
+    addressSummary.className = parts.length ? '' : 'text-secondary';
+  }
+
+  const setInputValue = (sel, val) => {
+    const input = account.querySelector(sel);
+    if (input) input.value = val || '';
+  };
+  setInputValue('[data-profile-name]', u.name);
+  setInputValue('[data-profile-phone]', u.phone);
+  setInputValue('[data-profile-address]', u.address);
+  setInputValue('[data-profile-postal-code]', u.postal_code);
+  setInputValue('[data-profile-city]', u.city);
+  setInputValue('[data-profile-province]', u.province);
+
   account.hidden = false;
   if (typeof renderAccountOrders === 'function') renderAccountOrders();
 }

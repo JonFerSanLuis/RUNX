@@ -16,7 +16,9 @@ if (!is_int($userId) && !ctype_digit((string) $userId)) {
 }
 
 try {
-    $statement = database()->prepare('SELECT id, name, email FROM users WHERE id = :id LIMIT 1');
+    $statement = database()->prepare(
+        'SELECT id, name, email, phone, address, city, postal_code, province FROM users WHERE id = :id LIMIT 1'
+    );
     $statement->execute(['id' => (int) $userId]);
     $user = $statement->fetch();
     if (!$user) {
@@ -24,7 +26,19 @@ try {
         session_destroy();
         jsonResponse(['authenticated' => false]);
     }
-    jsonResponse(['authenticated' => true, 'user' => ['id' => (int) $user['id'], 'name' => $user['name'], 'email' => $user['email']]]);
+    jsonResponse([
+        'authenticated' => true,
+        'user' => [
+            'id' => (int) $user['id'],
+            'name' => $user['name'],
+            'email' => $user['email'],
+            'phone' => $user['phone'] ?? '',
+            'address' => $user['address'] ?? '',
+            'city' => $user['city'] ?? '',
+            'postal_code' => $user['postal_code'] ?? '',
+            'province' => $user['province'] ?? '',
+        ],
+    ]);
 } catch (Throwable $exception) {
     error_log($exception->getMessage());
     apiError('No hemos podido comprobar la sesión. Inténtalo de nuevo.', 500);

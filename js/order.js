@@ -17,7 +17,7 @@ async function initCheckoutPage() {
 
   const session = await loadCurrentUser();
   if (!session.authenticated) {
-    location.replace('login.html');
+    location.replace('login.html?redirect=checkout.html');
     return;
   }
 
@@ -30,10 +30,18 @@ async function initCheckoutPage() {
   checkout.querySelector('[data-checkout-name]').textContent = session.user.name;
   checkout.querySelector('[data-checkout-email]').textContent = session.user.email;
 
-  const shippingNameInput = checkout.querySelector('#shippingName');
-  if (shippingNameInput && !shippingNameInput.value) {
-    shippingNameInput.value = session.user.name;
-  }
+  const user = session.user || {};
+  const setIfEmpty = (id, val) => {
+    const input = checkout.querySelector(id);
+    if (input && !input.value && val) input.value = val;
+  };
+
+  setIfEmpty('#shippingName', user.name);
+  setIfEmpty('#shippingPhone', user.phone);
+  setIfEmpty('#shippingAddress', user.address);
+  setIfEmpty('#shippingPostalCode', user.postal_code);
+  setIfEmpty('#shippingCity', user.city);
+  setIfEmpty('#shippingProvince', user.province);
 
   const items = await cartDetails();
   if (!items.length) {

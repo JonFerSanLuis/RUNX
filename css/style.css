@@ -9,4 +9,9 @@
 .shop-hero .eyebrow{color:#79a6ff;letter-spacing:.12em}
 .shop-hero h1{color:#fff;font-weight:850;letter-spacing:-.04em}
 .shop-hero .hero-desc{color:#e2e8f0;font-size:1.05rem}
+.site-search-form{max-width:210px;width:100%}
+.site-search-form .form-control{font-size:.85rem;padding:.4rem .65rem;border-color:var(--line);border-right:0}
+.site-search-form .btn{border-color:var(--line);border-left:0;padding:.4rem .65rem;color:var(--muted)}
+.site-search-form .btn:hover{color:var(--ink);background:var(--soft)}
+@media(max-width:991.98px){.site-search-form{max-width:100%;margin:.5rem 0}}
 
