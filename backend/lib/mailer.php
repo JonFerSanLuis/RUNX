@@ -69,6 +69,15 @@ function sendEmail(string $toEmail, string $toName, string $subject, string $htm
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             }
 
+            // En entornos locales (Windows / XAMPP) OpenSSL no suele tener el CA bundle configurado en php.ini
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true,
+                ],
+            ];
+
             $mail->send();
             logEmail($toEmail, $toName, $subject, $htmlContent, 'SENT_SMTP');
             return true;
