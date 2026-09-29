@@ -28,3 +28,97 @@
 .active-filter-chip button:hover{color:#dc3545}
 .product-card-sizes{min-height:22px}
 
+/* Centered 3-column Navbar */
+@media (min-width: 992px) {
+  .site-header .container {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-col-left {
+    flex: 1 1 0% !important;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-width: 0;
+  }
+  .nav-col-center {
+    flex: 0 0 auto !important;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+  }
+  .nav-col-right {
+    flex: 1 1 0% !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1.35rem;
+    min-width: 0;
+  }
+  .navbar-nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0 !important;
+  }
+  .navbar-nav .nav-link {
+    padding: 0.5rem 1.15rem !important;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink) !important;
+    position: relative;
+    white-space: nowrap;
+    transition: opacity 0.15s ease;
+  }
+  .navbar-nav .nav-link:hover {
+    opacity: 0.75;
+  }
+  .navbar-nav .nav-link.active::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 1.15rem;
+    right: 1.15rem;
+    height: 2px;
+    background: var(--ink);
+  }
+}
+
+/* Shop Products Toolbar & Search */
+.shop-products-header {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1.15rem;
+}
+.shop-search-bar .input-group {
+  border: 1px solid #cfd4d9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: #fff;
+}
+.shop-search-bar .input-group:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(17, 19, 21, 0.08);
+}
+.shop-search-bar .form-control {
+  border: none !important;
+  font-size: 0.92rem;
+  padding: 0.7rem 0.85rem;
+  min-height: 44px;
+}
+.shop-search-bar .form-control:focus {
+  box-shadow: none !important;
+}
+.shop-search-bar .input-group-text {
+  border: none !important;
+  background: transparent;
+  color: var(--muted);
+}
+.shop-search-bar .btn {
+  border-radius: 0;
+  padding-inline: 1.5rem;
+  min-height: 44px;
+}
+

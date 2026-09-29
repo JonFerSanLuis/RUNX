@@ -13,41 +13,28 @@ function headerTemplate(){
   const page=location.pathname.split('/').pop()||'index.html';
   const root=location.pathname.includes('/legal/')?'../':'';
   const active=key=>page===key?'active':'';
-  const currentQ = new URLSearchParams(location.search).get('q') || '';
-  const searchVal = currentQ.replace(/"/g, '&quot;');
   return `<header class="site-header sticky-top">
     <nav class="navbar navbar-expand-lg">
       <div class="container">
-        <a class="navbar-brand brand" href="${root}index.html"><span class="brand-mark">B</span>BRAND NAME</a>
-        <a href="${root}carrito.html" class="cart-link d-lg-none me-2" aria-label="Ver carrito">Carrito <span class="cart-badge" data-cart-count>0</span></a>
-        <button class="navbar-toggler border-0 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="Abrir menú">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="siteNav">
-          <ul class="navbar-nav mx-auto gap-lg-2">
-            <li class="nav-item"><a class="nav-link ${active('index.html')}" href="${root}index.html">Inicio</a></li>
+        <div class="nav-col-left">
+          <a class="navbar-brand brand mb-0 me-0" href="${root}index.html"><span class="brand-mark">B</span>BRAND NAME</a>
+        </div>
+        <div class="d-flex align-items-center d-lg-none gap-2">
+          <a href="${root}carrito.html" class="cart-link" aria-label="Ver carrito">Carrito <span class="cart-badge" data-cart-count>0</span></a>
+          <button class="navbar-toggler border-0 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="Abrir menú">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </div>
+        <div class="collapse navbar-collapse nav-col-center" id="siteNav">
+          <ul class="navbar-nav align-items-center mb-0">
             <li class="nav-item"><a class="nav-link ${active('tienda.html')||active('producto.html')}" href="${root}tienda.html">Tienda</a></li>
-            <li class="nav-item"><a class="nav-link" href="${root}tienda.html?category=Calcetines">Categorías</a></li>
             <li class="nav-item"><a class="nav-link ${active('sobre-nosotros.html')}" href="${root}sobre-nosotros.html">Sobre nosotros</a></li>
             <li class="nav-item"><a class="nav-link ${active('contacto.html')}" href="${root}contacto.html">Contacto</a></li>
             <li class="nav-item d-lg-none"><a class="nav-link ${active('faq.html')}" href="${root}faq.html">FAQ</a></li>
           </ul>
-          <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3">
-            <form class="site-search-form d-flex my-2 my-lg-0" action="${root}tienda.html" method="GET" role="search">
-              <div class="input-group input-group-sm">
-                <input class="form-control" type="search" name="q" value="${searchVal}" placeholder="Buscar productos…" aria-label="Buscar productos">
-                <button class="btn btn-outline-dark" type="submit" aria-label="Buscar">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
-                </button>
-              </div>
-            </form>
-            <div class="d-flex align-items-center gap-3" data-auth-nav>
-              <a href="${root}login.html" class="small fw-semibold">Iniciar sesión</a>
-              <a href="${root}registro.html" class="small fw-semibold">Crear cuenta</a>
-              <a href="${root}carrito.html" class="cart-link d-none d-lg-inline-block" aria-label="Ver carrito">Carrito <span class="cart-badge" data-cart-count>0</span></a>
-            </div>
-          </div>
+          <div class="d-lg-none mt-3 pt-3 border-top" data-auth-nav-mobile></div>
         </div>
+        <div class="nav-col-right d-none d-lg-flex" data-auth-nav></div>
       </div>
     </nav>
   </header>`;
@@ -116,15 +103,28 @@ function updateAuthNavigation(user) {
   const root = location.pathname.includes('/legal/') ? '../' : '';
   const safeRedirect = getSafeRedirectUrl();
   const redirectParam = safeRedirect ? `?redirect=${encodeURIComponent(safeRedirect)}` : '';
+
+  // Desktop
   document.querySelectorAll('[data-auth-nav]').forEach(container => {
-    const cart = `<a href="${root}carrito.html" class="cart-link d-none d-lg-inline-block" aria-label="Ver carrito">Carrito <span class="cart-badge" data-cart-count>0</span></a>`;
+    const cart = `<a href="${root}carrito.html" class="cart-link" aria-label="Ver carrito">Carrito <span class="cart-badge" data-cart-count>0</span></a>`;
     const adminLink = (user && user.is_admin)
       ? `<a href="${root}admin.html" class="badge bg-dark text-white text-decoration-none px-2 py-1 small d-inline-flex align-items-center">Admin</a>`
       : '';
     container.innerHTML = user
-      ? `${adminLink}<a href="${root}cuenta.html" class="small fw-semibold">Mi cuenta</a><button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" data-request-logout>Cerrar sesión</button>${cart}`
-      : `<a href="${root}login.html${redirectParam}" class="small fw-semibold">Iniciar sesión</a><a href="${root}registro.html${redirectParam}" class="small fw-semibold">Crear cuenta</a>${cart}`;
+      ? `${adminLink}<a href="${root}cuenta.html" class="small fw-semibold text-decoration-none">Mi cuenta</a><button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-secondary" data-request-logout>Cerrar sesión</button>${cart}`
+      : `<a href="${root}login.html${redirectParam}" class="small fw-semibold text-decoration-none">Iniciar sesión</a><a href="${root}registro.html${redirectParam}" class="small fw-semibold text-decoration-none">Crear cuenta</a>${cart}`;
   });
+
+  // Mobile
+  document.querySelectorAll('[data-auth-nav-mobile]').forEach(container => {
+    const adminLink = (user && user.is_admin)
+      ? `<a href="${root}admin.html" class="badge bg-dark text-white text-decoration-none px-2 py-1 small d-inline-flex align-items-center">Admin</a>`
+      : '';
+    container.innerHTML = user
+      ? `<div class="d-flex align-items-center justify-content-between gap-2">${adminLink}<a href="${root}cuenta.html" class="small fw-semibold text-decoration-none">Mi cuenta</a><button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-secondary" data-request-logout>Cerrar sesión</button></div>`
+      : `<div class="d-flex align-items-center gap-3"><a href="${root}login.html${redirectParam}" class="small fw-semibold text-decoration-none">Iniciar sesión</a><a href="${root}registro.html${redirectParam}" class="small fw-semibold text-decoration-none">Crear cuenta</a></div>`;
+  });
+
   try {
     updateCartCount();
   } catch (e) {}

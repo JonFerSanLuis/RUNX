@@ -38,7 +38,7 @@ function shopParameters() {
     Object.assign(priceFilter, prices[pricePreset]);
   }
 
-  const searchInput = form.querySelector('[name="q"]');
+  const searchInput = document.querySelector('#shopSearchInput') || form.querySelector('[name="q"]');
   const urlParam = new URLSearchParams(location.search).get('q') || '';
   const searchQuery = searchInput && searchInput.value.trim() !== '' ? searchInput.value.trim() : urlParam.trim();
 
@@ -236,6 +236,8 @@ function resetFilters() {
       input.value = '';
     }
   });
+  const shopSearch = document.querySelector('#shopSearchInput');
+  if (shopSearch) shopSearch.value = '';
   document.querySelectorAll('.site-search-form input[name="q"]').forEach(input => input.value = '');
   history.replaceState({}, '', 'tienda.html');
   currentPage = 1;
@@ -329,7 +331,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const presetSearch = new URLSearchParams(location.search).get('q');
   if (presetSearch) {
-    const qInput = form.querySelector('[name="q"]');
+    const qInput = document.querySelector('#shopSearchInput') || form.querySelector('[name="q"]');
     if (qInput) qInput.value = presetSearch;
   }
 
@@ -342,6 +344,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentPage = 1;
     renderShop();
   });
+
+  const shopSearchForm = document.querySelector('#shopSearchForm');
+  if (shopSearchForm) {
+    shopSearchForm.addEventListener('submit', event => {
+      event.preventDefault();
+      currentPage = 1;
+      const qVal = document.querySelector('#shopSearchInput')?.value.trim();
+      if (qVal) {
+        history.replaceState({}, '', `tienda.html?q=${encodeURIComponent(qVal)}`);
+      } else {
+        history.replaceState({}, '', 'tienda.html');
+      }
+      renderShop();
+    });
+  }
 
   form.addEventListener('submit', event => {
     event.preventDefault();
@@ -391,7 +408,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const inp = form?.querySelector(`[name="size"][value="${val}"]`);
         if (inp) inp.checked = false;
       } else if (type === 'q') {
-        const inp = form?.querySelector('[name="q"]');
+        const inp = document.querySelector('#shopSearchInput') || form?.querySelector('[name="q"]');
         if (inp) inp.value = '';
         history.replaceState({}, '', 'tienda.html');
       }
