@@ -7,11 +7,16 @@ function startUserSession(): void
         return;
     }
 
-    $applicationPath = dirname(dirname(dirname($_SERVER['SCRIPT_NAME'] ?? '/')));
-    $applicationPath = $applicationPath === '/' || $applicationPath === '\\' ? '/' : rtrim($applicationPath, '/') . '/';
+    $sessionName = 'RUNX_SESSID';
+    session_name($sessionName);
+
+    if (isset($_COOKIE[$sessionName]) && !preg_match('/^[a-zA-Z0-9,-]{16,128}$/', (string) $_COOKIE[$sessionName])) {
+        unset($_COOKIE[$sessionName]);
+    }
+
     session_set_cookie_params([
         'lifetime' => 0,
-        'path' => $applicationPath,
+        'path' => '/',
         'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
         'httponly' => true,
         'samesite' => 'Lax',

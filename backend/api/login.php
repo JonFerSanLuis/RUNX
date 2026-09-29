@@ -15,7 +15,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') {
 }
 
 try {
-    $statement = database()->prepare('SELECT id, password FROM users WHERE email = :email LIMIT 1');
+    $statement = database()->prepare('SELECT id, password, is_admin FROM users WHERE email = :email LIMIT 1');
     $statement->execute(['email' => $email]);
     $user = $statement->fetch();
     if (!$user || !password_verify($password, $user['password'])) {
@@ -25,7 +25,14 @@ try {
     startUserSession();
     session_regenerate_id(true);
     $_SESSION['user_id'] = (int) $user['id'];
-    jsonResponse(['success' => true, 'message' => 'Sesión iniciada correctamente.']);
+    jsonResponse([
+        'success' => true,
+        'message' => 'Sesión iniciada correctamente.',
+        'user' => [
+            'id' => (int) $user['id'],
+            'is_admin' => (int) ($user['is_admin'] ?? 0) === 1,
+        ],
+    ]);
 } catch (Throwable $exception) {
     error_log($exception->getMessage());
     apiError('No hemos podido iniciar sesión. Inténtalo de nuevo.', 500);

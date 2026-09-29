@@ -167,11 +167,20 @@ function initAuthenticationForms() {
   loginForm && refreshFieldValidity(loginForm);
   loginForm?.addEventListener('submit', async event => {
     event.preventDefault(); loginForm.classList.add('was-validated'); if (!loginForm.checkValidity()) return;
+    const btn = loginForm.querySelector('button[type="submit"]');
+    const originalText = btn ? btn.textContent : 'Entrar';
+    if (btn) { btn.disabled = true; btn.textContent = 'Iniciando sesión…'; }
     try {
-      await apiRequest('backend/api/login.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: loginForm.email.value, password: loginForm.password.value }) });
+      await apiRequest('backend/api/login.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: loginForm.email.value.trim(), password: loginForm.password.value }) });
+      setFormMessage(loginForm, 'Sesión iniciada correctamente. Accediendo…', 'success');
       const target = getSafeRedirectUrl();
-      location.assign(target || 'cuenta.html');
-    } catch (error) { setFormMessage(loginForm, error.message); }
+      window.setTimeout(() => {
+        location.assign(target || 'cuenta.html');
+      }, 300);
+    } catch (error) {
+      setFormMessage(loginForm, error.message);
+      if (btn) { btn.disabled = false; btn.textContent = originalText; }
+    }
   });
 
   const registerForm = document.querySelector('[data-register-form]');

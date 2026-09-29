@@ -28,14 +28,23 @@ async function checkAdminAuth() {
   try {
     session = await loadCurrentUser();
   } catch (err) {
+    console.error('Error comprobando sesión de administrador:', err);
     session = { authenticated: false };
   }
 
-  // 1. Si no hay sesión iniciada, redirigir al login
+  // 1. Si no hay sesión iniciada
   if (!session || !session.authenticated || !session.user) {
     if (userEl) userEl.textContent = 'No identificado';
     if (logoutBtn) logoutBtn.classList.add('d-none');
-    location.replace('login.html?redirect=admin.html');
+    if (deniedMsg) {
+      deniedMsg.innerHTML = 'Para acceder al Panel de Administración debes iniciar sesión con una cuenta de administrador.';
+    }
+    if (loginRedirectBtn) {
+      loginRedirectBtn.textContent = 'Iniciar sesión como administrador';
+      loginRedirectBtn.href = 'login.html?redirect=admin.html';
+    }
+    if (deniedEl) deniedEl.classList.remove('d-none');
+    if (contentEl) contentEl.classList.add('d-none');
     return false;
   }
 
@@ -49,6 +58,7 @@ async function checkAdminAuth() {
     }
     if (loginRedirectBtn) {
       loginRedirectBtn.textContent = 'Cambiar a cuenta de administrador';
+      loginRedirectBtn.href = 'login.html?redirect=admin.html';
     }
     if (logoutBtn) logoutBtn.classList.remove('d-none');
     if (deniedEl) deniedEl.classList.remove('d-none');
