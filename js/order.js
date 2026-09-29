@@ -278,7 +278,7 @@ async function renderAccountOrders() {
               <div class="d-flex align-items-center gap-2 mt-3 mt-sm-0">
                 <strong class="me-2">${formatPrice(order.total)}</strong>
                 <a class="btn btn-outline-dark btn-sm" href="pedido.html?id=${order.id}">Ver pedido</a>
-                <a class="btn btn-outline-secondary btn-sm" href="backend/api/invoice.php?order_id=${order.id}" target="_blank" title="Descargar o imprimir factura oficial">📄 Factura PDF</a>
+                <a class="btn btn-outline-secondary btn-sm" href="backend/api/invoice.php?order_id=${order.id}" target="_blank" title="Descargar o imprimir factura oficial">Factura PDF</a>
               </div>
             </article>
           `).join('')}
@@ -348,7 +348,7 @@ async function initOrderDetailPage() {
             </div>
             <div>
               <a class="btn btn-outline-dark btn-sm" href="backend/api/invoice.php?order_id=${order.id}" target="_blank">
-                📄 Descargar Factura (PDF)
+                Descargar Factura (PDF)
               </a>
             </div>
           </div>

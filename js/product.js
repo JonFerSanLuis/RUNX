@@ -70,7 +70,6 @@ async function renderProduct() {
       <button class="btn btn-secondary w-100 py-3 mb-3" disabled>Producto agotado</button>
       <div class="card border border-warning-subtle bg-light p-3 rounded-3 shadow-sm" id="stock-alert-card">
         <div class="d-flex align-items-center gap-2 mb-2 text-dark">
-          <span class="fs-5">🔔</span>
           <h3 class="h6 mb-0 fw-bold">¿Quieres que te avisemos cuando haya stock?</h3>
         </div>
         <p class="small text-secondary mb-3">Introduce tu correo y te enviaremos una notificación automática en cuanto volvamos a tener unidades a la venta.</p>
@@ -83,7 +82,7 @@ async function renderProduct() {
         </form>
       </div>
     `
-    : `<button class="btn btn-primary w-100 py-3" data-add-product data-id="${product.id}">Añadir al carrito</button>`;
+    : `<button class="btn btn-dark w-100 py-3" data-add-product data-id="${product.id}">Añadir al carrito</button>`;
 
   root.innerHTML = `
     <div class="container section-pad">
@@ -133,7 +132,7 @@ async function renderProduct() {
             <div class="d-flex justify-content-between align-items-center mb-1">
               <legend class="h6 mb-0">Talla: <span data-selected-size>${product.sizes[0] || 'Única'}</span></legend>
               <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none small text-secondary fw-semibold" data-open-size-guide>
-                📏 Guía de tallas
+                Guía de tallas
               </button>
             </div>
             <div class="d-flex gap-2 flex-wrap">

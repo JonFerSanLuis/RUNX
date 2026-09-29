@@ -28,6 +28,16 @@ function productCard(product) {
     buttonMarkup = `<button class="btn btn-dark btn-sm w-100 add-card" data-id="${product.id}" data-default-size="${defaultSize}" data-default-color="${defaultColor}">Añadir al carrito</button>`;
   }
 
+  const hasMultipleSizes = product.sizes && product.sizes.length > 1;
+  const sizesMarkup = hasMultipleSizes
+    ? `<div class="product-card-sizes small mb-2 d-flex align-items-center gap-1 flex-wrap">
+        <span class="text-secondary me-1" style="font-size:0.75rem;">Tallas:</span>
+        ${product.sizes.map(s => `<span class="badge bg-light text-dark border px-2 py-1" style="font-size:0.72rem; font-weight:600;">${s}</span>`).join('')}
+      </div>`
+    : `<div class="product-card-sizes small mb-2">
+        <span class="badge bg-light text-secondary border px-2 py-1" style="font-size:0.72rem; font-weight:500;">Talla única</span>
+      </div>`;
+
   return `
     <article class="product-card">
       <div class="product-image-wrap">
@@ -38,7 +48,8 @@ function productCard(product) {
       </div>
       <div class="pt-3">
         <p class="product-category mb-1">${product.category}</p>
-        <a class="product-name d-block mb-1" href="producto.html?id=${product.id}">${product.name}</a>
+        <a class="product-name d-block mb-2" href="producto.html?id=${product.id}">${product.name}</a>
+        ${sizesMarkup}
         <div class="rating mb-2">
           <span class="stars">★★★★★</span> ${Number(product.rating).toFixed(1)}
           <span class="text-secondary">(${product.reviews})</span>

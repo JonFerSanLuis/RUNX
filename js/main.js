@@ -119,7 +119,7 @@ function updateAuthNavigation(user) {
   document.querySelectorAll('[data-auth-nav]').forEach(container => {
     const cart = `<a href="${root}carrito.html" class="cart-link d-none d-lg-inline-block" aria-label="Ver carrito">Carrito <span class="cart-badge" data-cart-count>0</span></a>`;
     const adminLink = (user && user.is_admin)
-      ? `<a href="${root}admin.html" class="badge bg-dark text-white text-decoration-none px-2 py-1 small d-inline-flex align-items-center gap-1">⚙️ Admin</a>`
+      ? `<a href="${root}admin.html" class="badge bg-dark text-white text-decoration-none px-2 py-1 small d-inline-flex align-items-center">Admin</a>`
       : '';
     container.innerHTML = user
       ? `${adminLink}<a href="${root}cuenta.html" class="small fw-semibold">Mi cuenta</a><button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" data-request-logout>Cerrar sesión</button>${cart}`
@@ -505,7 +505,7 @@ async function openQuickAddModal(productId) {
         <div class="d-flex justify-content-between align-items-center mb-1">
           <label class="form-label small fw-bold text-uppercase text-secondary mb-0">Talla: <span class="text-dark fw-bold" id="quickAddSelectedSize">${escapeHtml(selectedSize)}</span></label>
           <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none small text-secondary" onclick="openSizeGuideFromQuickAdd()">
-            📏 Guía de tallas
+            Guía de tallas
           </button>
         </div>
         <div class="d-flex gap-2 flex-wrap" id="quickAddSizes">
@@ -589,19 +589,19 @@ function ensureSizeGuideModal() {
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content border-0 shadow">
         <div class="modal-header bg-light">
-          <h5 class="modal-title fw-bold fs-6" id="sizeGuideModalLabel">📏 Guía Oficial de Tallas y Medidas</h5>
+          <h5 class="modal-title fw-bold fs-6" id="sizeGuideModalLabel">Guía Oficial de Tallas y Medidas</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body p-3 p-md-4">
           <ul class="nav nav-pills nav-fill mb-3 gap-2" id="sizeTabs" role="tablist">
             <li class="nav-item" role="presentation">
-              <button class="nav-link active fw-bold small" id="socks-tab" data-bs-toggle="pill" data-bs-target="#tab-socks-content" type="button" role="tab">🧦 Calcetines Técnicos</button>
+              <button class="nav-link active fw-semibold small" id="socks-tab" data-bs-toggle="pill" data-bs-target="#tab-socks-content" type="button" role="tab">Calcetines Técnicos</button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link fw-bold small" id="belts-tab" data-bs-toggle="pill" data-bs-target="#tab-belts-content" type="button" role="tab">🎽 Cinturones y Riñoneras</button>
+              <button class="nav-link fw-semibold small" id="belts-tab" data-bs-toggle="pill" data-bs-target="#tab-belts-content" type="button" role="tab">Cinturones y Riñoneras</button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link fw-bold small" id="measure-tab" data-bs-toggle="pill" data-bs-target="#tab-measure-content" type="button" role="tab">🦶 Cómo medir tu pie</button>
+              <button class="nav-link fw-semibold small" id="measure-tab" data-bs-toggle="pill" data-bs-target="#tab-measure-content" type="button" role="tab">Cómo medir tu pie</button>
             </li>
           </ul>
 
@@ -621,21 +621,21 @@ function ensureSizeGuideModal() {
                   </thead>
                   <tbody>
                     <tr>
-                      <td><strong class="badge bg-primary fs-6">S</strong></td>
+                      <td><strong class="badge bg-dark fs-6">S</strong></td>
                       <td>35 – 38</td>
                       <td>2.5 – 5.0</td>
                       <td>US 4.5 – 6.5</td>
                       <td>22.0 – 24.0 cm</td>
                     </tr>
                     <tr>
-                      <td><strong class="badge bg-primary fs-6">M</strong></td>
+                      <td><strong class="badge bg-dark fs-6">M</strong></td>
                       <td>39 – 42</td>
                       <td>5.5 – 8.0</td>
                       <td>US 7.0 – 9.0</td>
                       <td>24.5 – 27.0 cm</td>
                     </tr>
                     <tr>
-                      <td><strong class="badge bg-primary fs-6">L</strong></td>
+                      <td><strong class="badge bg-dark fs-6">L</strong></td>
                       <td>43 – 46</td>
                       <td>8.5 – 11.5</td>
                       <td>US 9.5 – 12.5</td>
@@ -645,7 +645,7 @@ function ensureSizeGuideModal() {
                 </table>
               </div>
               <div class="p-3 bg-light rounded border border-light-subtle small text-secondary">
-                <strong class="text-dark d-block mb-1">💡 Consejo técnico runner:</strong>
+                <strong class="text-dark d-block mb-1">Consejo técnico:</strong>
                 Nuestros calcetines cuentan con patronaje anatómico asimétrico (pie izquierdo / derecho) y banda elástica de sujeción en el arco plantar. Si estás en el límite entre dos tallas, elige la menor si buscas mayor ajuste y compresión para ritmos rápidos, o la mayor si prefieres mayor confort en tiradas largas.
               </div>
             </div>
@@ -685,7 +685,7 @@ function ensureSizeGuideModal() {
                 </table>
               </div>
               <div class="p-3 bg-light rounded border border-light-subtle small text-secondary">
-                <strong class="text-dark d-block mb-1">💡 Ajuste anti-rebote:</strong>
+                <strong class="text-dark d-block mb-1">Pautas de ajuste:</strong>
                 Para un rendimiento óptimo sin balanceo al correr, coloca el cinturón sobre la parte superior de las caderas, no en la cintura alta. La banda elástica técnica mantendrá el contenido firme contra el cuerpo sin oprimir la respiración diafragmática.
               </div>
             </div>
@@ -694,22 +694,22 @@ function ensureSizeGuideModal() {
             <div class="tab-pane fade" id="tab-measure-content" role="tabpanel">
               <div class="row g-3">
                 <div class="col-md-4 text-center p-3 border rounded bg-light">
-                  <div class="fs-2 mb-2">📄</div>
+                  <div class="badge rounded-circle bg-dark text-white mb-2 fs-6" style="width:28px;height:28px;line-height:20px;">1</div>
                   <h6 class="fw-bold mb-1">1. Apoya el pie</h6>
                   <p class="small text-secondary mb-0">Coloca una hoja de papel en el suelo pegada a la pared. Apoya el talón contra la pared descalzo o con calcetín fino.</p>
                 </div>
                 <div class="col-md-4 text-center p-3 border rounded bg-light">
-                  <div class="fs-2 mb-2">✏️</div>
+                  <div class="badge rounded-circle bg-dark text-white mb-2 fs-6" style="width:28px;height:28px;line-height:20px;">2</div>
                   <h6 class="fw-bold mb-1">2. Marca la punta</h6>
                   <p class="small text-secondary mb-0">Traza una marca recta con un lápiz delante del dedo más largo (suele ser el pulgar o el segundo dedo).</p>
                 </div>
                 <div class="col-md-4 text-center p-3 border rounded bg-light">
-                  <div class="fs-2 mb-2">📏</div>
+                  <div class="badge rounded-circle bg-dark text-white mb-2 fs-6" style="width:28px;height:28px;line-height:20px;">3</div>
                   <h6 class="fw-bold mb-1">3. Mide en cm</h6>
                   <p class="small text-secondary mb-0">Mide la distancia desde el borde de la hoja hasta la marca. Si tienes dudas, mide ambos pies y quédate con el mayor.</p>
                 </div>
               </div>
-              <div class="alert alert-info mt-3 py-2 small mb-0">
+              <div class="alert alert-light border mt-3 py-2 small mb-0">
                 <strong>Importante para corredores:</strong> El pie tiende a expandirse y acumular volumen tras varios kilómetros de impacto. Para calcetines de maratón y trail se recomienda medio centímetro de holgura.
               </div>
             </div>
@@ -735,10 +735,7 @@ function ensureRunnerAdvisorModal() {
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content border-0 shadow">
         <div class="modal-header bg-dark text-white">
-          <div class="d-flex align-items-center gap-2">
-            <span class="fs-5">🏃‍♂️</span>
-            <h5 class="modal-title fw-bold fs-6">Recomendador Técnico RUNX</h5>
-          </div>
+          <h5 class="modal-title fw-bold fs-6">Recomendador Técnico RUNX</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body p-4" id="runnerAdvisorBody"></div>
@@ -767,29 +764,26 @@ function openRunnerAdvisorModal() {
     if (state.step === 1) {
       bodyEl.innerHTML = `
         <div class="mb-4 text-center">
-          <span class="badge bg-primary text-uppercase px-2 py-1 mb-2">Paso 1 de 3</span>
+          <span class="badge bg-dark text-uppercase px-2 py-1 mb-2">Paso 1 de 3</span>
           <h4 class="fw-bold mb-1">¿Por qué terreno corres habitualmente?</h4>
           <p class="text-secondary small mb-0">La superficie determina el tipo de protección, amortiguación y sujeción que necesitas.</p>
         </div>
         <div class="row g-3">
           <div class="col-md-4">
             <button type="button" class="advisor-step-btn" data-advisor-choice="terrain" data-val="asfalto">
-              <div class="fs-2 mb-2">🏙️</div>
-              <h6 class="fw-bold mb-1">Asfalto y Ciudad</h6>
+              <h6 class="fw-bold mb-1 text-dark">Asfalto y Ciudad</h6>
               <p class="small text-secondary mb-0">Superficies duras con impacto repetitivo. Cero fricción y amortiguación.</p>
             </button>
           </div>
           <div class="col-md-4">
             <button type="button" class="advisor-step-btn" data-advisor-choice="terrain" data-val="trail">
-              <div class="fs-2 mb-2">🌲</div>
-              <h6 class="fw-bold mb-1">Trail y Montaña</h6>
+              <h6 class="fw-bold mb-1 text-dark">Trail y Montaña</h6>
               <p class="small text-secondary mb-0">Desniveles, piedras y bajadas. Puntera reforzada y máxima durabilidad.</p>
             </button>
           </div>
           <div class="col-md-4">
             <button type="button" class="advisor-step-btn" data-advisor-choice="terrain" data-val="mixto">
-              <div class="fs-2 mb-2">🏟️</div>
-              <h6 class="fw-bold mb-1">Pista, Cinta o Mixto</h6>
+              <h6 class="fw-bold mb-1 text-dark">Pista, Cinta o Mixto</h6>
               <p class="small text-secondary mb-0">Sesiones de ritmo, series y versatilidad. Ligereza y transpiración pura.</p>
             </button>
           </div>
@@ -798,92 +792,77 @@ function openRunnerAdvisorModal() {
     } else if (state.step === 2) {
       bodyEl.innerHTML = `
         <div class="mb-4 text-center">
-          <span class="badge bg-primary text-uppercase px-2 py-1 mb-2">Paso 2 de 3</span>
+          <span class="badge bg-dark text-uppercase px-2 py-1 mb-2">Paso 2 de 3</span>
           <h4 class="fw-bold mb-1">¿Cuál es tu distancia habitual o próximo reto?</h4>
           <p class="text-secondary small mb-0">A mayor distancia, mayor es la dilatación del pie y el desgaste muscular.</p>
         </div>
         <div class="row g-3">
           <div class="col-md-4">
             <button type="button" class="advisor-step-btn" data-advisor-choice="distance" data-val="short">
-              <div class="fs-2 mb-2">⚡</div>
-              <h6 class="fw-bold mb-1">5K a 10K</h6>
+              <h6 class="fw-bold mb-1 text-dark">5K a 10K</h6>
               <p class="small text-secondary mb-0">Entrenamientos ágiles y ritmos vivos. Prioridad al contacto directo y ligereza.</p>
             </button>
           </div>
           <div class="col-md-4">
             <button type="button" class="advisor-step-btn" data-advisor-choice="distance" data-val="half">
-              <div class="fs-2 mb-2">🎯</div>
-              <h6 class="fw-bold mb-1">21K Media Maratón</h6>
+              <h6 class="fw-bold mb-1 text-dark">21K Media Maratón</h6>
               <p class="small text-secondary mb-0">El equilibrio perfecto entre soporte metatarsal, ajuste firme y confort.</p>
             </button>
           </div>
           <div class="col-md-4">
             <button type="button" class="advisor-step-btn" data-advisor-choice="distance" data-val="marathon">
-              <div class="fs-2 mb-2">🏔️</div>
-              <h6 class="fw-bold mb-1">42K Maratón o Ultras</h6>
-              <p class="small text-secondary mb-0">Compresión gradual, resistencia extrema a la fricción y capacidad para geles/móvil.</p>
+              <h6 class="fw-bold mb-1 text-dark">42K Maratón o Ultras</h6>
+              <p class="small text-secondary mb-0">Compresión gradual, resistencia extrema a la fricción y capacidad para nutrición.</p>
             </button>
           </div>
         </div>
         <div class="mt-4 text-center">
-          <button type="button" class="btn btn-link btn-sm text-secondary" id="advisorPrevBtn">← Volver al paso anterior</button>
+          <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none" id="advisorPrevBtn">← Volver al paso anterior</button>
         </div>
       `;
     } else if (state.step === 3) {
       bodyEl.innerHTML = `
         <div class="mb-4 text-center">
-          <span class="badge bg-primary text-uppercase px-2 py-1 mb-2">Paso 3 de 3</span>
-          <h4 class="fw-bold mb-1">¿Cuál es tu necesidad principal o punto débil?</h4>
+          <span class="badge bg-dark text-uppercase px-2 py-1 mb-2">Paso 3 de 3</span>
+          <h4 class="fw-bold mb-1">¿Cuál es tu necesidad principal o prioridad técnica?</h4>
           <p class="text-secondary small mb-0">Selecciona el factor decisivo para afinar la recomendación.</p>
         </div>
         <div class="row g-3">
           <div class="col-md-6">
             <button type="button" class="advisor-step-btn" data-advisor-choice="priority" data-val="ampollas">
-              <div class="d-flex align-items-center gap-3">
-                <span class="fs-1">🛡️</span>
-                <div>
-                  <h6 class="fw-bold mb-1">Prevenir ampollas y rozaduras</h6>
-                  <p class="small text-secondary mb-0">Fibras técnicas anti-fricción en talón y puntera sin costuras.</p>
-                </div>
+              <div>
+                <h6 class="fw-bold mb-1 text-dark">Prevenir ampollas y rozaduras</h6>
+                <p class="small text-secondary mb-0">Fibras técnicas anti-fricción en talón y puntera sin costuras.</p>
               </div>
             </button>
           </div>
           <div class="col-md-6">
             <button type="button" class="advisor-step-btn" data-advisor-choice="priority" data-val="compresion">
-              <div class="d-flex align-items-center gap-3">
-                <span class="fs-1">🔄</span>
-                <div>
-                  <h6 class="fw-bold mb-1">Compresión y fatiga muscular</h6>
-                  <p class="small text-secondary mb-0">Soporte compresivo en gemelo y fascia para reducir la sobrecarga.</p>
-                </div>
+              <div>
+                <h6 class="fw-bold mb-1 text-dark">Compresión y fatiga muscular</h6>
+                <p class="small text-secondary mb-0">Soporte compresivo en gemelo y fascia para reducir la sobrecarga.</p>
               </div>
             </button>
           </div>
           <div class="col-md-6">
             <button type="button" class="advisor-step-btn" data-advisor-choice="priority" data-val="ligereza">
-              <div class="d-flex align-items-center gap-3">
-                <span class="fs-1">💨</span>
-                <div>
-                  <h6 class="fw-bold mb-1">Máxima transpiración y ligereza</h6>
-                  <p class="small text-secondary mb-0">Tejido microperforado para días calurosos y ritmos de competición.</p>
-                </div>
+              <div>
+                <h6 class="fw-bold mb-1 text-dark">Máxima transpiración y ligereza</h6>
+                <p class="small text-secondary mb-0">Tejido microperforado para días calurosos y ritmos de competición.</p>
               </div>
             </button>
           </div>
           <div class="col-md-6">
             <button type="button" class="advisor-step-btn" data-advisor-choice="priority" data-val="portar">
-              <div class="d-flex align-items-center gap-3">
-                <span class="fs-1">📱</span>
-                <div>
-                  <h6 class="fw-bold mb-1">Llevar móvil, geles y llaves</h6>
-                  <p class="small text-secondary mb-0">Accesorios anti-rebote para correr con las manos 100% libres.</p>
-                </div>
+              <div>
+                <h6 class="fw-bold mb-1 text-dark">Llevar móvil, geles y llaves</h6>
+                <p class="small text-secondary mb-0">Accesorios anti-rebote para correr con las manos libres.</p>
               </div>
             </button>
           </div>
         </div>
         <div class="mt-4 text-center">
-          <button type="button" class="btn btn-link btn-sm text-secondary" id="advisorPrevBtn">← Volver al paso anterior</button>
+          <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none" id="advisorPrevBtn">← Volver al paso anterior</button>
         </div>
       `;
     } else if (state.step === 4) {
@@ -911,7 +890,7 @@ function openRunnerAdvisorModal() {
   async function renderResults() {
     bodyEl.innerHTML = `
       <div class="text-center py-5">
-        <div class="spinner-border text-primary mb-3" role="status"></div>
+        <div class="spinner-border text-dark mb-3" role="status"></div>
         <h5 class="fw-bold">Generando tu configuración técnica recomendada…</h5>
       </div>
     `;
@@ -953,7 +932,7 @@ function openRunnerAdvisorModal() {
 
       bodyEl.innerHTML = `
         <div class="text-center mb-4">
-          <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 fw-bold mb-2">✓ Recomendación Personalizada</span>
+          <span class="badge bg-light text-dark border px-3 py-1 fw-semibold mb-2">Recomendación Personalizada</span>
           <h4 class="fw-bold mb-1">${profileTitle}</h4>
           <p class="text-secondary small mx-auto" style="max-width: 620px;">${profileDesc}</p>
         </div>
@@ -969,7 +948,7 @@ function openRunnerAdvisorModal() {
                     <div>
                       <span class="badge bg-light text-dark border small">${escapeHtml(p.category)}</span>
                       <h6 class="fw-bold mb-1 mt-1">${escapeHtml(p.name)}</h6>
-                      <strong class="text-primary">${formatPrice(p.price)}</strong>
+                      <strong class="text-dark">${formatPrice(p.price)}</strong>
                     </div>
                   </div>
                   <ul class="small text-secondary ps-3 mb-3">
@@ -986,8 +965,8 @@ function openRunnerAdvisorModal() {
         </div>
 
         <div class="text-center pt-2 border-top">
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="advisorRestartBtn">
-            🔄 Probar otra combinación
+          <button type="button" class="btn btn-outline-dark btn-sm" id="advisorRestartBtn">
+            Probar otra combinación
           </button>
         </div>
       `;
