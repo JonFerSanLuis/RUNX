@@ -193,16 +193,16 @@ async function loadAdminOrders(statusFilter = 'all', searchQuery = '') {
             ${o.tracking.number ? `<div class="small text-muted mt-1 font-monospace">${o.tracking.number}</div>` : ''}
           </td>
           <td class="text-end">
-            <div class="btn-group btn-group-sm">
-              <button class="btn btn-outline-dark" onclick="openOrderModalById(${o.id})">
+            <div class="d-inline-flex gap-1 flex-wrap justify-content-end">
+              <a href="backend/api/invoice.php?order_id=${o.id}&type=invoice" target="_blank" class="btn btn-sm btn-outline-primary fw-semibold" title="Ver y descargar factura oficial">
+                📄 Factura PDF
+              </a>
+              <a href="backend/api/invoice.php?order_id=${o.id}&type=packing_slip" target="_blank" class="btn btn-sm btn-outline-secondary" title="Albarán de preparación de almacén">
+                📦 Albarán
+              </a>
+              <button class="btn btn-sm btn-outline-dark" onclick="openOrderModalById(${o.id})">
                 Gestionar
               </button>
-              <a href="backend/api/invoice.php?order_id=${o.id}&type=invoice" target="_blank" class="btn btn-outline-secondary" title="Factura Oficial PDF">
-                📄
-              </a>
-              <a href="backend/api/invoice.php?order_id=${o.id}&type=packing_slip" target="_blank" class="btn btn-outline-secondary" title="Albarán de Envío / Picking">
-                📦
-              </a>
             </div>
           </td>
         </tr>
@@ -238,8 +238,8 @@ function openOrderModalById(orderId) {
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 p-2 px-3 bg-light border rounded mb-2">
       <span class="small fw-bold text-secondary text-uppercase">Documentos PDF del pedido:</span>
       <div class="d-flex gap-2">
-        <a href="backend/api/invoice.php?order_id=${order.id}&type=invoice" target="_blank" class="btn btn-outline-primary btn-sm">
-          📄 Factura Oficial (PDF)
+        <a href="backend/api/invoice.php?order_id=${order.id}&type=invoice" target="_blank" class="btn btn-primary btn-sm fw-semibold">
+          📄 Descargar Factura (PDF)
         </a>
         <a href="backend/api/invoice.php?order_id=${order.id}&type=packing_slip" target="_blank" class="btn btn-outline-dark btn-sm">
           📦 Albarán de Entrega (Picking)

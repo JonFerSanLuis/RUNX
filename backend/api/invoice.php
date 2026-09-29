@@ -141,6 +141,12 @@ $companyPhone = '+34 910 00 00 00';
       transition: all 0.15s ease;
     }
     .btn:hover { background: #f6f8fa; }
+    .btn-download {
+      background: #0969da;
+      color: #ffffff;
+      border-color: #0969da;
+    }
+    .btn-download:hover { background: #0856b3; }
     .btn-primary {
       background: #1f2328;
       color: #ffffff;
@@ -395,7 +401,8 @@ $companyPhone = '+34 910 00 00 00';
           <a href="invoice.php?order_id=<?= (int) $order['id'] ?>&type=invoice" class="btn">📄 Ver Factura</a>
         <?php endif; ?>
       <?php endif; ?>
-      <button onclick="window.print()" class="btn btn-primary">🖨️ Imprimir / Guardar en PDF</button>
+      <button id="btn-download-pdf" onclick="downloadPdfFile()" class="btn btn-download">⬇️ Descargar PDF</button>
+      <button onclick="window.print()" class="btn">🖨️ Imprimir</button>
       <button onclick="window.close(); if(history.length > 1) history.back();" class="btn">Cerrar</button>
     </div>
   </div>
@@ -590,5 +597,51 @@ $companyPhone = '+34 910 00 00 00';
 
   </div>
 
+  <script src="../../js/html2pdf.bundle.min.js"></script>
+  <script>
+    if (typeof html2pdf === 'undefined') {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      document.head.appendChild(s);
+    }
+
+    async function downloadPdfFile() {
+      const btn = document.getElementById('btn-download-pdf');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Generando PDF…';
+
+      const element = document.querySelector('.document-page');
+      const filename = '<?= $type === 'packing_slip' ? 'Albaran_' . $slipNumber : 'Factura_' . $invoiceNumber ?>.pdf';
+
+      const opt = {
+        margin: [6, 6, 6, 6],
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      try {
+        if (typeof html2pdf !== 'undefined') {
+          await html2pdf().set(opt).from(element).save();
+        } else {
+          window.print();
+        }
+      } catch (err) {
+        console.warn('html2pdf fallback to print:', err);
+        window.print();
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    if (new URLSearchParams(window.location.search).get('download') === '1') {
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(downloadPdfFile, 600);
+      });
+    }
+  </script>
 </body>
 </html>
