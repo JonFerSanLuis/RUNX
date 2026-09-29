@@ -130,7 +130,12 @@ async function renderProduct() {
             </div>
           </fieldset>
           <fieldset class="mb-4">
-            <legend class="h6">Talla: <span data-selected-size>${product.sizes[0] || 'Única'}</span></legend>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <legend class="h6 mb-0">Talla: <span data-selected-size>${product.sizes[0] || 'Única'}</span></legend>
+              <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none small text-secondary fw-semibold" data-open-size-guide>
+                📏 Guía de tallas
+              </button>
+            </div>
             <div class="d-flex gap-2 flex-wrap">
               ${(product.sizes.length ? product.sizes : ['Única'])
                 .map(

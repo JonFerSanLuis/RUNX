@@ -119,7 +119,10 @@ function updateCartCount() {
 function cartItemsMarkup(items) {
   return items
     .map(({ key, product, quantity, size, color }) => {
-      const variantText = [color, size].filter(Boolean).join(' · ') || 'Variante estándar';
+      const parts = [];
+      if (color && color !== 'Estándar') parts.push(color);
+      if (size) parts.push(size.toLowerCase().includes('talla') ? size : `Talla ${size}`);
+      const variantText = parts.length ? parts.join(' · ') : 'Talla única';
       const image = product.images?.[0] || 'assets/images/products-studio.png';
 
       return `

@@ -17,9 +17,16 @@ function productCard(product) {
 
   const image = product.images?.[0] || 'assets/images/products-studio.png';
   const isOutOfStock = product.stock <= 0;
-  const buttonMarkup = isOutOfStock
-    ? '<button class="btn btn-secondary btn-sm w-100" disabled>Agotado</button>'
-    : `<button class="btn btn-dark btn-sm w-100 add-card" data-id="${product.id}">Añadir al carrito</button>`;
+  let buttonMarkup = '';
+  if (isOutOfStock) {
+    buttonMarkup = '<button class="btn btn-secondary btn-sm w-100" disabled>Agotado</button>';
+  } else if (product.sizes && product.sizes.length > 1) {
+    buttonMarkup = `<button class="btn btn-dark btn-sm w-100" data-open-quick-add="${product.id}">Añadir al carrito</button>`;
+  } else {
+    const defaultSize = (product.sizes && product.sizes[0]) ? product.sizes[0] : 'Única';
+    const defaultColor = (product.colors && product.colors[0]) ? product.colors[0] : '';
+    buttonMarkup = `<button class="btn btn-dark btn-sm w-100 add-card" data-id="${product.id}" data-default-size="${defaultSize}" data-default-color="${defaultColor}">Añadir al carrito</button>`;
+  }
 
   return `
     <article class="product-card">

@@ -14,6 +14,24 @@
   <main>
     <section class="page-hero shop-hero"><div class="container"><p class="eyebrow">La colección</p><h1 class="display-4">Tienda</h1><p class="hero-desc mb-0">Productos de prueba para la primera versión del catálogo.</p></div></section>
     <section class="container section-pad">
+      <!-- Banner del Recomendador Runner -->
+      <div class="card border-0 text-white rounded-3 shadow-sm mb-4 overflow-hidden" style="background: linear-gradient(135deg, #121518 0%, #1c2638 100%); border-left: 4px solid #235ee7 !important;">
+        <div class="card-body p-3 p-md-4">
+          <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+              <span class="badge bg-primary text-uppercase fw-bold mb-2">Asistente Inteligente RUNX</span>
+              <h2 class="h5 fw-bold mb-1">¿Dudas sobre qué material elegir para tu entrenamiento?</h2>
+              <p class="small text-white-50 mb-0">Responde 3 preguntas y nuestro recomendador te indicará el equipamiento idóneo según tu terreno, distancia y pisada.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+              <button type="button" class="btn btn-primary btn-sm fw-bold px-3 py-2" data-open-advisor>
+                🏃‍♂️ Iniciar Recomendador
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="shop-mobile-toolbar d-lg-none mb-4">
         <button class="btn btn-outline-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileFilters" aria-controls="mobileFilters">Filtros <span class="filter-count" data-filter-count hidden>0</span></button>
         <label class="d-flex align-items-center gap-2 small fw-semibold">Ordenar
@@ -23,7 +41,8 @@
       <div class="row g-4">
         <aside class="col-lg-3 d-none d-lg-block shop-sidebar">
           <form class="filter-panel" data-filter-form>
-            <div class="d-flex justify-content-between align-items-center mb-3"><h2 class="filter-title mb-0">Filtros</h2><button type="button" class="btn btn-link small p-0" data-reset-filters>Limpiar</button></div>
+            <div class="d-flex justify-content-between align-items-center mb-3"><h2 class="filter-title mb-0">Filtros</h2><button type="button" class="btn btn-link small p-0 text-decoration-none" data-reset-filters>Limpiar todos</button></div>
+            
             <div class="mb-4">
               <label class="filter-title d-block mb-2" for="filterSearch">Buscar</label>
               <div class="input-group input-group-sm">
@@ -33,15 +52,59 @@
                 </button>
               </div>
             </div>
+
+            <!-- Disponibilidad / Stock -->
+            <fieldset class="mb-4">
+              <legend>Disponibilidad</legend>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="in_stock" value="1" id="filterInStock">
+                <label class="form-check-label fw-semibold" for="filterInStock">Solo en stock</label>
+              </div>
+            </fieldset>
+
             <fieldset class="mb-4"><legend>Categoría</legend><div data-category-options><div class="spinner-border spinner-border-sm text-secondary" role="status"><span class="visually-hidden">Cargando categorías…</span></div></div></fieldset>
-            <fieldset class="mb-4"><legend>Precio</legend><div class="form-check"><input class="form-check-input" type="radio" name="price" value="under15" id="p1"><label class="form-check-label" for="p1">Menos de 15 €</label></div><div class="form-check"><input class="form-check-input" type="radio" name="price" value="15to25" id="p2"><label class="form-check-label" for="p2">15 € – 25 €</label></div><div class="form-check"><input class="form-check-input" type="radio" name="price" value="over25" id="p3"><label class="form-check-label" for="p3">Más de 25 €</label></div></fieldset>
-            <fieldset class="mb-4"><legend>Color</legend><div class="form-check"><input class="form-check-input" type="checkbox" name="color" value="Negro" id="c1"><label class="form-check-label" for="c1">Negro</label></div><div class="form-check"><input class="form-check-input" type="checkbox" name="color" value="Blanco" id="c2"><label class="form-check-label" for="c2">Blanco</label></div><div class="form-check"><input class="form-check-input" type="checkbox" name="color" value="Gris" id="c3"><label class="form-check-label" for="c3">Gris</label></div></fieldset>
-            <fieldset><legend>Talla</legend><div class="form-check"><input class="form-check-input" type="checkbox" name="size" value="S" id="s1"><label class="form-check-label" for="s1">S</label></div><div class="form-check"><input class="form-check-input" type="checkbox" name="size" value="M" id="s2"><label class="form-check-label" for="s2">M</label></div><div class="form-check"><input class="form-check-input" type="checkbox" name="size" value="L" id="s3"><label class="form-check-label" for="s3">L</label></div></fieldset>
+
+            <fieldset class="mb-4">
+              <legend>Precio (€)</legend>
+              <div class="d-flex gap-2 align-items-center mb-2">
+                <input type="number" min="0" max="200" step="1" class="form-control form-control-sm" name="min_price" id="filterMinPrice" placeholder="Mín €">
+                <span class="text-secondary">-</span>
+                <input type="number" min="0" max="200" step="1" class="form-control form-control-sm" name="max_price" id="filterMaxPrice" placeholder="Máx €">
+                <button type="button" class="btn btn-outline-dark btn-sm py-1 px-2" data-apply-price>OK</button>
+              </div>
+              <div class="form-check"><input class="form-check-input" type="radio" name="price" value="under15" id="p1"><label class="form-check-label" for="p1">Menos de 15 €</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" name="price" value="15to25" id="p2"><label class="form-check-label" for="p2">15 € – 25 €</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" name="price" value="over25" id="p3"><label class="form-check-label" for="p3">Más de 25 €</label></div>
+            </fieldset>
+
+            <fieldset class="mb-4">
+              <legend>Color</legend>
+              <div class="form-check"><input class="form-check-input" type="checkbox" name="color" value="Negro" id="c1"><label class="form-check-label" for="c1"><span class="color-dot" style="background:#151515;"></span>Negro</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" name="color" value="Blanco" id="c2"><label class="form-check-label" for="c2"><span class="color-dot" style="background:#f5f5f2;"></span>Blanco</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" name="color" value="Gris" id="c3"><label class="form-check-label" for="c3"><span class="color-dot" style="background:#7d8287;"></span>Gris</label></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Talla</legend>
+              <div class="d-flex gap-2 flex-wrap">
+                <div class="form-check me-2"><input class="form-check-input" type="checkbox" name="size" value="S" id="s1"><label class="form-check-label fw-bold" for="s1">S</label></div>
+                <div class="form-check me-2"><input class="form-check-input" type="checkbox" name="size" value="M" id="s2"><label class="form-check-label fw-bold" for="s2">M</label></div>
+                <div class="form-check me-2"><input class="form-check-input" type="checkbox" name="size" value="L" id="s3"><label class="form-check-label fw-bold" for="s3">L</label></div>
+                <div class="form-check me-2"><input class="form-check-input" type="checkbox" name="size" value="Única" id="s4"><label class="form-check-label fw-bold" for="s4">Única</label></div>
+              </div>
+            </fieldset>
           </form>
         </aside>
         <div class="col-lg-9">
-          <div class="d-none d-lg-flex justify-content-between gap-3 align-items-center mb-4"><span class="text-secondary" data-shop-count></span><label class="d-flex align-items-center gap-2 small">Ordenar <select id="sortProductsDesktop" class="form-select form-select-sm"><option value="relevance">Relevancia</option><option value="best">Más vendidos</option><option value="low">Precio: menor a mayor</option><option value="high">Precio: mayor a menor</option><option value="new">Novedades</option><option value="rating">Mejor valorados</option></select></label></div>
+          <div class="d-none d-lg-flex justify-content-between gap-3 align-items-center mb-4">
+            <span class="text-secondary fw-semibold" data-shop-count></span>
+            <label class="d-flex align-items-center gap-2 small">Ordenar <select id="sortProductsDesktop" class="form-select form-select-sm"><option value="relevance">Relevancia</option><option value="best">Más vendidos</option><option value="low">Precio: menor a mayor</option><option value="high">Precio: mayor a menor</option><option value="new">Novedades</option><option value="rating">Mejor valorados</option></select></label>
+          </div>
           <p class="text-secondary small d-lg-none mb-3" data-shop-count></p>
+
+          <!-- Barra dinámica de filtros activos -->
+          <div id="activeFiltersBar" class="d-flex flex-wrap gap-2 align-items-center mb-3" style="display:none !important;"></div>
+
           <div class="row product-grid g-3 g-md-4" data-product-grid></div>
           <nav class="mt-4 mt-md-5" aria-label="Paginación de tienda" data-pagination></nav>
         </div>

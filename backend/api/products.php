@@ -101,6 +101,10 @@ try {
         $where[] = 'p.price <= :max_price';
         $params['max_price'] = $maxPrice;
     }
+    $inStock = filter_input(INPUT_GET, 'in_stock', FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+    if ($inStock === true) {
+        $where[] = 'p.stock > 0';
+    }
     $featured = filter_input(INPUT_GET, 'featured', FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
     if ($featured === true) {
         $where[] = 'p.featured = 1';

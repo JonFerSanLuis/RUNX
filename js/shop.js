@@ -18,13 +18,25 @@ function shopParameters() {
   if (!form) return {};
 
   const category = filterValues(form, 'category')[0];
-  const price = filterValues(form, 'price')[0];
+  const inStock = form.querySelector('[name="in_stock"]')?.checked;
+  const pricePreset = filterValues(form, 'price_preset')[0] || filterValues(form, 'price')[0];
+
+  let minPrice = form.querySelector('[name="min_price"]')?.value.trim();
+  let maxPrice = form.querySelector('[name="max_price"]')?.value.trim();
 
   const prices = {
     under15: { max_price: 14.99 },
     '15to25': { min_price: 15, max_price: 25 },
     over25: { min_price: 25.01 },
   };
+
+  const priceFilter = {};
+  if (minPrice !== '' && minPrice !== undefined && !isNaN(minPrice)) priceFilter.min_price = Number(minPrice);
+  if (maxPrice !== '' && maxPrice !== undefined && !isNaN(maxPrice)) priceFilter.max_price = Number(maxPrice);
+
+  if (Object.keys(priceFilter).length === 0 && pricePreset && prices[pricePreset]) {
+    Object.assign(priceFilter, prices[pricePreset]);
+  }
 
   const searchInput = form.querySelector('[name="q"]');
   const urlParam = new URLSearchParams(location.search).get('q') || '';
@@ -39,20 +51,73 @@ function shopParameters() {
       'relevance',
     category: categorySlug(category),
     q: searchQuery,
+    in_stock: inStock ? 'true' : undefined,
     color: filterValues(form, 'color').join(','),
     size: filterValues(form, 'size').join(','),
-    ...(prices[price] || {}),
+    ...priceFilter,
   };
 }
 
 function updateFilterCount() {
   const form = document.querySelector('[data-filter-form]');
   if (!form) return;
-  const count = form.querySelectorAll('input:checked').length;
+  const count = form.querySelectorAll('input:checked').length +
+    (form.querySelector('[name="min_price"]')?.value ? 1 : 0) +
+    (form.querySelector('[name="max_price"]')?.value ? 1 : 0);
   document.querySelectorAll('[data-filter-count]').forEach(el => {
     el.textContent = count;
     el.hidden = count === 0;
   });
+}
+
+function renderActiveFilterChips(params) {
+  const bar = document.getElementById('activeFiltersBar');
+  if (!bar) return;
+
+  const chips = [];
+  const form = document.querySelector('[data-filter-form]');
+
+  if (params.category) {
+    const catLabel = form?.querySelector(`[name="category"][value="${params.category}"]`)?.nextElementSibling?.textContent || params.category;
+    chips.push(`<span class="active-filter-chip">Categoría: ${catLabel} <button type="button" aria-label="Quitar filtro" data-clear-one="category">×</button></span>`);
+  }
+
+  if (params.in_stock) {
+    chips.push(`<span class="active-filter-chip">✓ Solo en stock <button type="button" aria-label="Quitar filtro" data-clear-one="in_stock">×</button></span>`);
+  }
+
+  if (params.min_price !== undefined || params.max_price !== undefined) {
+    let pLabel = 'Precio: ';
+    if (params.min_price !== undefined && params.max_price !== undefined) pLabel += `${params.min_price} € – ${params.max_price} €`;
+    else if (params.min_price !== undefined) pLabel += `> ${params.min_price} €`;
+    else if (params.max_price !== undefined) pLabel += `< ${params.max_price} €`;
+    chips.push(`<span class="active-filter-chip">${pLabel} <button type="button" aria-label="Quitar filtro" data-clear-one="price">×</button></span>`);
+  }
+
+  if (params.color) {
+    params.color.split(',').filter(Boolean).forEach(c => {
+      chips.push(`<span class="active-filter-chip">Color: ${c} <button type="button" aria-label="Quitar filtro" data-clear-one="color" data-val="${c}">×</button></span>`);
+    });
+  }
+
+  if (params.size) {
+    params.size.split(',').filter(Boolean).forEach(s => {
+      chips.push(`<span class="active-filter-chip">Talla: ${s} <button type="button" aria-label="Quitar filtro" data-clear-one="size" data-val="${s}">×</button></span>`);
+    });
+  }
+
+  if (params.q) {
+    chips.push(`<span class="active-filter-chip">"${params.q}" <button type="button" aria-label="Quitar filtro" data-clear-one="q">×</button></span>`);
+  }
+
+  if (chips.length) {
+    chips.push(`<button type="button" class="btn btn-link btn-sm p-0 text-danger text-decoration-none ms-2 small fw-semibold" data-reset-filters>Limpiar todos</button>`);
+    bar.innerHTML = chips.join('');
+    bar.style.display = 'flex';
+  } else {
+    bar.innerHTML = '';
+    bar.style.display = 'none';
+  }
 }
 
 function loadingMarkup() {
@@ -82,28 +147,29 @@ async function renderShop() {
   const grid = document.querySelector('[data-product-grid]');
   if (!grid) return;
 
+  const currentParams = shopParameters();
+  renderActiveFilterChips(currentParams);
+
   grid.innerHTML = loadingMarkup();
   try {
-    const body = await loadProducts(shopParameters());
+    const body = await loadProducts(currentParams);
     const products = body.data;
-    const searchQuery = shopParameters().q;
-    const searchNotice = searchQuery
-      ? `<div class="col-12 mb-2"><div class="alert alert-light border d-flex justify-content-between align-items-center py-2 px-3"><span>Búsqueda: <strong>${searchQuery}</strong></span><button type="button" class="btn btn-outline-dark btn-sm py-1" data-reset-filters>Limpiar búsqueda</button></div></div>`
-      : '';
+    const searchQuery = currentParams.q;
 
     grid.innerHTML = products.length
-      ? `${searchNotice}${products.map(product => `<div class="col-6 col-md-4 col-lg-3">${productCard(product)}</div>`).join('')}`
+      ? products.map(product => `<div class="col-6 col-md-4 col-lg-4">${productCard(product)}</div>`).join('')
       : `
         <div class="col-12">
           <div class="empty-state">
-            <h2 class="h4">${searchQuery ? `No hay productos para "${searchQuery}"` : 'No hay productos con estos filtros'}</h2>
-            <a href="tienda.html" class="btn btn-outline-dark mt-2">Ver todo el catálogo</a>
+            <h2 class="h4">${searchQuery ? `No hay productos para "${searchQuery}"` : 'No hay productos con los filtros seleccionados'}</h2>
+            <p class="text-secondary small">Prueba a desmarcar algunos filtros para ver más resultados.</p>
+            <button type="button" class="btn btn-outline-dark mt-2" data-reset-filters>Restablecer filtros</button>
           </div>
         </div>
       `;
 
     document.querySelectorAll('[data-shop-count]').forEach(el => {
-      el.textContent = `${body.pagination.total} producto${body.pagination.total !== 1 ? 's' : ''}`;
+      el.textContent = `Mostrando ${products.length} de ${body.pagination.total} producto${body.pagination.total !== 1 ? 's' : ''}`;
     });
     renderPagination(body.pagination);
   } catch (error) {
@@ -136,12 +202,25 @@ function renderPagination(pagination) {
 }
 
 function copyFilterState(from, to) {
-  ['category', 'price', 'color', 'size'].forEach(name => {
+  ['category', 'price_preset', 'price', 'color', 'size'].forEach(name => {
     const values = filterValues(from, name);
     to.querySelectorAll(`[name="${name}"]`).forEach(input => {
       input.checked = values.includes(input.value);
     });
   });
+
+  const fromInStock = from.querySelector('[name="in_stock"]');
+  const toInStock = to.querySelector('[name="in_stock"]');
+  if (fromInStock && toInStock) toInStock.checked = fromInStock.checked;
+
+  const fromMin = from.querySelector('[name="min_price"]');
+  const toMin = to.querySelector('[name="min_price"]');
+  if (fromMin && toMin) toMin.value = fromMin.value;
+
+  const fromMax = from.querySelector('[name="max_price"]');
+  const toMax = to.querySelector('[name="max_price"]');
+  if (fromMax && toMax) toMax.value = fromMax.value;
+
   const fromQ = from.querySelector('[name="q"]');
   const toQ = to.querySelector('[name="q"]');
   if (fromQ && toQ) toQ.value = fromQ.value;
@@ -149,7 +228,9 @@ function copyFilterState(from, to) {
 
 function resetFilters() {
   document.querySelectorAll('[data-filter-form] input, [data-mobile-filter-form] input').forEach(input => {
-    if (input.type === 'radio' || input.type === 'checkbox') {
+    if (input.type === 'radio') {
+      input.checked = (input.name === 'price_preset' && input.value === 'all');
+    } else if (input.type === 'checkbox') {
       input.checked = false;
     } else {
       input.value = '';
@@ -285,6 +366,49 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.addEventListener('click', event => {
+    const clearOne = event.target.closest('[data-clear-one]');
+    if (clearOne) {
+      const type = clearOne.dataset.clearOne;
+      const val = clearOne.dataset.val;
+      const form = document.querySelector('[data-filter-form]');
+      if (type === 'category') {
+        form?.querySelectorAll('[name="category"]').forEach(i => i.checked = false);
+      } else if (type === 'in_stock') {
+        const inp = form?.querySelector('[name="in_stock"]');
+        if (inp) inp.checked = false;
+      } else if (type === 'price') {
+        form?.querySelectorAll('[name="price_preset"], [name="price"]').forEach(i => {
+          i.checked = (i.name === 'price_preset' && i.value === 'all');
+        });
+        const minInp = form?.querySelector('[name="min_price"]');
+        const maxInp = form?.querySelector('[name="max_price"]');
+        if (minInp) minInp.value = '';
+        if (maxInp) maxInp.value = '';
+      } else if (type === 'color') {
+        const inp = form?.querySelector(`[name="color"][value="${val}"]`);
+        if (inp) inp.checked = false;
+      } else if (type === 'size') {
+        const inp = form?.querySelector(`[name="size"][value="${val}"]`);
+        if (inp) inp.checked = false;
+      } else if (type === 'q') {
+        const inp = form?.querySelector('[name="q"]');
+        if (inp) inp.value = '';
+        history.replaceState({}, '', 'tienda.html');
+      }
+      currentPage = 1;
+      renderShop();
+      return;
+    }
+
+    const applyPriceBtn = event.target.closest('[data-apply-price]');
+    if (applyPriceBtn) {
+      const form = document.querySelector('[data-filter-form]');
+      form?.querySelectorAll('[name="price_preset"]').forEach(i => i.checked = false);
+      currentPage = 1;
+      renderShop();
+      return;
+    }
+
     const page = event.target.closest('[data-page]');
     if (page) {
       currentPage = Number(page.dataset.page);
