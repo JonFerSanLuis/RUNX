@@ -56,9 +56,33 @@ async function renderProduct() {
     stockBadgeMarkup = '<span class="badge bg-success-subtle text-success border border-success-subtle">En stock</span>';
   }
 
+  let currentUserEmail = '';
+  try {
+    const session = await loadCurrentUser();
+    if (session && session.authenticated && session.user && session.user.email) {
+      currentUserEmail = session.user.email;
+    }
+  } catch (e) {}
+
   const isOutOfStock = product.stock <= 0;
   const buttonMarkup = isOutOfStock
-    ? '<button class="btn btn-secondary w-100 py-3" disabled>Producto agotado</button>'
+    ? `
+      <button class="btn btn-secondary w-100 py-3 mb-3" disabled>Producto agotado</button>
+      <div class="card border border-warning-subtle bg-light p-3 rounded-3 shadow-sm" id="stock-alert-card">
+        <div class="d-flex align-items-center gap-2 mb-2 text-dark">
+          <span class="fs-5">🔔</span>
+          <h3 class="h6 mb-0 fw-bold">¿Quieres que te avisemos cuando haya stock?</h3>
+        </div>
+        <p class="small text-secondary mb-3">Introduce tu correo y te enviaremos una notificación automática en cuanto volvamos a tener unidades a la venta.</p>
+        <form id="stock-alert-form" novalidate>
+          <div class="input-group mb-1">
+            <input type="email" class="form-control" id="stock-alert-email" placeholder="tu@email.com" value="${escapeHtml(currentUserEmail)}" required>
+            <button class="btn btn-dark px-3 fw-semibold" type="submit" id="stock-alert-submit-btn">Avisarme</button>
+          </div>
+          <div id="stock-alert-feedback" class="small mt-2" style="display:none;"></div>
+        </form>
+      </div>
+    `
     : `<button class="btn btn-primary w-100 py-3" data-add-product data-id="${product.id}">Añadir al carrito</button>`;
 
   root.innerHTML = `
@@ -193,6 +217,53 @@ async function renderProduct() {
       });
     }
   });
+
+  const stockAlertForm = root.querySelector('#stock-alert-form');
+  if (stockAlertForm) {
+    stockAlertForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const emailInput = stockAlertForm.querySelector('#stock-alert-email');
+      const feedback = stockAlertForm.querySelector('#stock-alert-feedback');
+      const submitBtn = stockAlertForm.querySelector('#stock-alert-submit-btn');
+      const emailVal = emailInput.value.trim();
+
+      if (!emailVal || !emailInput.checkValidity()) {
+        feedback.style.display = 'block';
+        feedback.className = 'small mt-2 text-danger';
+        feedback.textContent = 'Por favor, introduce una dirección de correo válida.';
+        emailInput.focus();
+        return;
+      }
+
+      const origText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Guardando…';
+      feedback.style.display = 'none';
+
+      try {
+        const res = await apiRequest('backend/api/stock-alert.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            product_id: product.id,
+            email: emailVal,
+          }),
+        });
+
+        feedback.style.display = 'block';
+        feedback.className = 'small mt-2 text-success fw-semibold';
+        feedback.textContent = res.message || '¡Anotado! Te avisaremos cuando vuelva a haber stock.';
+        submitBtn.disabled = true;
+        submitBtn.textContent = '✓ Registrado';
+      } catch (err) {
+        feedback.style.display = 'block';
+        feedback.className = 'small mt-2 text-danger';
+        feedback.textContent = err.message || 'No se ha podido registrar el aviso. Inténtalo de nuevo.';
+        submitBtn.disabled = false;
+        submitBtn.textContent = origText;
+      }
+    });
+  }
 
   try {
     const related = await requestProducts({ category: product.categorySlug, limit: 4, sort: 'relevance' });

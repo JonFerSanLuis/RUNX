@@ -17,7 +17,8 @@ if ($method === 'GET') {
             'SELECT p.id, p.category_id, p.name, p.slug, p.description, p.price, p.old_price, p.stock, ' .
             'p.rating, p.reviews_count, p.featured, p.bestseller, p.is_new, p.active, p.created_at, ' .
             'c.name AS category_name, ' .
-            '(SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY sort_order ASC, id ASC LIMIT 1) AS image_url ' .
+            '(SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY sort_order ASC, id ASC LIMIT 1) AS image_url, ' .
+            '(SELECT COUNT(*) FROM stock_alerts WHERE product_id = p.id AND status = "pending") AS waiting_alerts_count ' .
             'FROM products p ' .
             'LEFT JOIN categories c ON p.category_id = c.id ' .
             'ORDER BY p.id DESC'
@@ -40,6 +41,7 @@ if ($method === 'GET') {
                     'price' => (float) $p['price'],
                     'old_price' => $p['old_price'] !== null ? (float) $p['old_price'] : null,
                     'stock' => (int) $p['stock'],
+                    'waiting_alerts_count' => (int) ($p['waiting_alerts_count'] ?? 0),
                     'rating' => (float) $p['rating'],
                     'reviews_count' => (int) $p['reviews_count'],
                     'featured' => (bool) $p['featured'],
@@ -89,7 +91,12 @@ if ($method === 'GET') {
     try {
         $db->beginTransaction();
 
+        $previousStock = 0;
         if ($id) {
+            $prevStmt = $db->prepare('SELECT stock FROM products WHERE id = :id LIMIT 1');
+            $prevStmt->execute(['id' => $id]);
+            $previousStock = (int) $prevStmt->fetchColumn();
+
             // Actualizar producto existente
             $upd = $db->prepare(
                 'UPDATE products SET category_id = :cat, name = :name, slug = :slug, description = :desc, ' .
@@ -114,6 +121,49 @@ if ($method === 'GET') {
 
             $productId = $id;
             $msg = 'Producto actualizado correctamente.';
+
+            // Si estaba agotado y ahora tiene stock, avisar a los clientes en lista de espera
+            if ($previousStock === 0 && $stock > 0) {
+                $alertStmt = $db->prepare('SELECT id, email FROM stock_alerts WHERE product_id = :pid AND status = "pending"');
+                $alertStmt->execute(['pid' => $id]);
+                $waiters = $alertStmt->fetchAll(PDO::FETCH_ASSOC);
+
+                if (!empty($waiters)) {
+                    require_once __DIR__ . '/../../lib/mailer.php';
+                    $config = mailConfig();
+                    $appUrl = rtrim((string) ($config['app_url'] ?? 'http://localhost/RUNX'), '/');
+                    $productUrl = $appUrl . '/producto.html?id=' . $id;
+
+                    $notifiedCount = 0;
+                    if (!$imageUrl) {
+                        $imgStmt = $db->prepare('SELECT image_url FROM product_images WHERE product_id = :pid ORDER BY sort_order ASC LIMIT 1');
+                        $imgStmt->execute(['pid' => $id]);
+                        $foundImg = $imgStmt->fetchColumn();
+                        if ($foundImg) {
+                            $imageUrl = (string) $foundImg;
+                        }
+                    }
+                    foreach ($waiters as $w) {
+                        try {
+                            sendStockAvailableEmail(
+                                $w['email'],
+                                $name,
+                                $productUrl,
+                                (float) $price,
+                                $imageUrl ?: 'assets/images/products-studio.png'
+                            );
+                            $db->prepare('UPDATE stock_alerts SET status = "notified", notified_at = NOW() WHERE id = :aid')
+                               ->execute(['aid' => $w['id']]);
+                            $notifiedCount++;
+                        } catch (Throwable $mailEx) {
+                            error_log('Error enviando aviso de stock a ' . $w['email'] . ': ' . $mailEx->getMessage());
+                        }
+                    }
+                    if ($notifiedCount > 0) {
+                        $msg .= " Se ha enviado aviso por email a {$notifiedCount} cliente(s) en lista de espera.";
+                    }
+                }
+            }
         } else {
             // Insertar nuevo producto
             $uniqueSlug = $slug . '-' . bin2hex(random_bytes(3));

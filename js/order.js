@@ -275,9 +275,10 @@ async function renderAccountOrders() {
                 <h3 class="h6 mb-1">Pedido #${order.id}</h3>
                 <p class="small text-secondary mb-0">${orderDate(order.created_at)} · ${order.status_label}</p>
               </div>
-              <div class="d-flex align-items-center gap-3 mt-3 mt-sm-0">
-                <strong>${formatPrice(order.total)}</strong>
+              <div class="d-flex align-items-center gap-2 mt-3 mt-sm-0">
+                <strong class="me-2">${formatPrice(order.total)}</strong>
                 <a class="btn btn-outline-dark btn-sm" href="pedido.html?id=${order.id}">Ver pedido</a>
+                <a class="btn btn-outline-secondary btn-sm" href="backend/api/invoice.php?order_id=${order.id}" target="_blank" title="Descargar o imprimir factura oficial">📄 Factura</a>
               </div>
             </article>
           `).join('')}
@@ -336,12 +337,21 @@ async function initOrderDetailPage() {
       <section class="page-hero">
         <div class="container">
           <p class="eyebrow">Detalle del pedido</p>
-          <h1 class="display-4">Pedido #${order.id}</h1>
-          <p class="text-secondary mb-0">
-            ${orderDate(order.created_at)} · 
-            <span class="badge bg-dark">${order.status_label}</span> · 
-            <span class="badge bg-success-subtle text-success border border-success-subtle">✓ ${order.payment_status_label || 'Pagado'}</span>
-          </p>
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+              <h1 class="display-4">Pedido #${order.id}</h1>
+              <p class="text-secondary mb-0">
+                ${orderDate(order.created_at)} · 
+                <span class="badge bg-dark">${order.status_label}</span> · 
+                <span class="badge bg-success-subtle text-success border border-success-subtle">✓ ${order.payment_status_label || 'Pagado'}</span>
+              </p>
+            </div>
+            <div>
+              <a class="btn btn-outline-dark btn-sm" href="backend/api/invoice.php?order_id=${order.id}" target="_blank">
+                📄 Descargar Factura (PDF)
+              </a>
+            </div>
+          </div>
         </div>
       </section>
       <section class="container section-pad">

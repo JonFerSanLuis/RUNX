@@ -193,9 +193,17 @@ async function loadAdminOrders(statusFilter = 'all', searchQuery = '') {
             ${o.tracking.number ? `<div class="small text-muted mt-1 font-monospace">${o.tracking.number}</div>` : ''}
           </td>
           <td class="text-end">
-            <button class="btn btn-outline-dark btn-sm" onclick="openOrderModalById(${o.id})">
-              Ver / Editar
-            </button>
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-outline-dark" onclick="openOrderModalById(${o.id})">
+                Gestionar
+              </button>
+              <a href="backend/api/invoice.php?order_id=${o.id}&type=invoice" target="_blank" class="btn btn-outline-secondary" title="Factura Oficial PDF">
+                📄
+              </a>
+              <a href="backend/api/invoice.php?order_id=${o.id}&type=packing_slip" target="_blank" class="btn btn-outline-secondary" title="Albarán de Envío / Picking">
+                📦
+              </a>
+            </div>
           </td>
         </tr>
       `;
@@ -225,9 +233,20 @@ function openOrderModalById(orderId) {
   const titleEl = document.getElementById('orderModalTitle');
   const bodyEl = document.getElementById('orderModalBody');
 
-  titleEl.innerHTML = `Gestión del Pedido <span class="text-primary">#${order.id}</span>`;
-
   bodyEl.innerHTML = `
+    <!-- Barra de documentos imprimibles -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 p-2 px-3 bg-light border rounded mb-2">
+      <span class="small fw-bold text-secondary text-uppercase">Documentos PDF del pedido:</span>
+      <div class="d-flex gap-2">
+        <a href="backend/api/invoice.php?order_id=${order.id}&type=invoice" target="_blank" class="btn btn-outline-primary btn-sm">
+          📄 Factura Oficial (PDF)
+        </a>
+        <a href="backend/api/invoice.php?order_id=${order.id}&type=packing_slip" target="_blank" class="btn btn-outline-dark btn-sm">
+          📦 Albarán de Entrega (Picking)
+        </a>
+      </div>
+    </div>
+
     <div class="row g-3">
       <!-- Datos del cliente y envío -->
       <div class="col-md-6">
@@ -412,6 +431,10 @@ function renderProductsTable(products) {
         ? `<span class="badge bg-warning text-dark">${p.stock} ud. (Bajo)</span>`
         : `<span class="badge bg-success-subtle text-success border">${p.stock} ud.</span>`);
 
+    const waitingAlertsBadge = Number(p.waiting_alerts_count || 0) > 0
+      ? `<div class="mt-1"><span class="badge bg-warning-subtle text-dark border border-warning" title="${p.waiting_alerts_count} cliente(s) esperando reposición de stock">🔔 ${p.waiting_alerts_count} en espera</span></div>`
+      : '';
+
     return `
       <tr class="${p.active ? '' : 'table-light text-muted'}">
         <td>
@@ -426,7 +449,7 @@ function renderProductsTable(products) {
           <strong>${formatPrice(p.price)}</strong>
           ${p.old_price ? `<div class="small text-secondary text-decoration-line-through">${formatPrice(p.old_price)}</div>` : ''}
         </td>
-        <td>${stockBadge}</td>
+        <td>${stockBadge}${waitingAlertsBadge}</td>
         <td class="small">
           <span style="color:#dca616;">★</span> ${Number(p.rating).toFixed(1)} (${p.reviews_count})
         </td>
@@ -455,6 +478,12 @@ function openCreateProductModal() {
   document.getElementById('prodId').value = '';
   document.getElementById('productModalTitle').textContent = 'Añadir Nuevo Producto';
 
+  const alertNotice = document.getElementById('prodStockAlertNotice');
+  if (alertNotice) {
+    alertNotice.classList.add('d-none');
+    alertNotice.textContent = '';
+  }
+
   const modalEl = document.getElementById('productModal');
   if (!activeProductModal) {
     activeProductModal = new bootstrap.Modal(modalEl);
@@ -482,6 +511,18 @@ function openEditProductModalById(productId) {
   document.getElementById('prodFeatured').checked = p.featured;
   document.getElementById('prodBestseller').checked = p.bestseller;
   document.getElementById('prodIsNew').checked = p.is_new;
+
+  const alertNotice = document.getElementById('prodStockAlertNotice');
+  if (alertNotice) {
+    const waiting = Number(p.waiting_alerts_count || 0);
+    if (waiting > 0) {
+      alertNotice.innerHTML = `🔔 <strong>${waiting} cliente(s) en lista de espera:</strong> Si aumentas el stock por encima de 0 y guardas los cambios, el sistema les enviará automáticamente un email de notificación para que puedan comprarlo.`;
+      alertNotice.classList.remove('d-none');
+    } else {
+      alertNotice.classList.add('d-none');
+      alertNotice.textContent = '';
+    }
+  }
 
   document.getElementById('productModalTitle').innerHTML = `Editar Producto <span class="text-primary">#${p.id}</span>`;
 

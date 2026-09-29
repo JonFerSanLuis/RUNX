@@ -442,3 +442,36 @@ HTML;
     $html = emailLayout($subject, "Envío del pedido #{$orderId}", $content);
     return sendEmail($customerEmail, $customerName, $subject, $html);
 }
+
+/**
+ * Envía notificación automática al cliente cuando un producto vuelve a tener stock.
+ */
+function sendStockAvailableEmail(string $recipientEmail, string $productName, string $productUrl, float $productPrice, string $productImage): bool
+{
+    $config = mailConfig();
+    $nameClean = htmlspecialchars($productName, ENT_QUOTES, 'UTF-8');
+    $priceFormatted = number_format($productPrice, 2, ',', '.') . ' €';
+
+    $content = <<<HTML
+<div style="text-align:center; margin-bottom:20px;">
+  <span style="display:inline-block; background:#e8f4ff; color:#0969da; font-size:12px; font-weight:700; padding:4px 10px; border-radius:4px; text-transform:uppercase; letter-spacing:0.5px;">¡Vuelve a haber unidades!</span>
+  <h2 style="margin:12px 0 6px 0; font-size:22px; font-weight:800; color:#121518;">{$nameClean}</h2>
+  <div style="font-size:18px; font-weight:700; color:#0969da; margin-bottom:16px;">{$priceFormatted}</div>
+</div>
+
+<p>¡Buenas noticias! Nos dejaste tu correo para que te avisáramos en cuanto recibiéramos nuevas unidades de <strong>{$nameClean}</strong>.</p>
+<p>El producto ya se encuentra repuesto en nuestro catálogo y disponible para compra inmediata con entrega en 24/48 horas.</p>
+
+<div class="info-card" style="margin:20px 0; text-align:center;">
+  <p style="margin:0 0 16px 0; color:#57606a; font-size:13px;">Las unidades son limitadas y se asignan por orden de pedido.</p>
+  <a href="{$productUrl}" class="btn" style="background:#111315; color:#ffffff; font-weight:700; padding:12px 24px; border-radius:4px; text-decoration:none; display:inline-block;">Comprar Ahora</a>
+</div>
+
+<p style="font-size:12px; color:#697078; margin-top:24px; text-align:center;">Este es un aviso puntual que solicitaste expresamente. No recibirás más correos a menos que vuelvas a solicitar una alerta.</p>
+HTML;
+
+    $subject = "🔔 ¡Buenas noticias! {$productName} vuelve a estar disponible - {$config['from_name']}";
+    $html = emailLayout($subject, "Stock disponible", $content);
+    return sendEmail($recipientEmail, 'Cliente', $subject, $html);
+}
+
