@@ -105,6 +105,13 @@ function getSafeRedirectUrl() {
   return trimmed;
 }
 
+function updateCartCount() {
+  const elements = document.querySelectorAll('[data-cart-count]');
+  if (!elements.length) return;
+  const count = (typeof getCart === 'function') ? getCart().reduce((sum, item) => sum + item.quantity, 0) : 0;
+  elements.forEach(badge => { badge.textContent = count; });
+}
+
 function updateAuthNavigation(user) {
   const root = location.pathname.includes('/legal/') ? '../' : '';
   const safeRedirect = getSafeRedirectUrl();
@@ -118,17 +125,25 @@ function updateAuthNavigation(user) {
       ? `${adminLink}<a href="${root}cuenta.html" class="small fw-semibold">Mi cuenta</a><button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" data-request-logout>Cerrar sesión</button>${cart}`
       : `<a href="${root}login.html${redirectParam}" class="small fw-semibold">Iniciar sesión</a><a href="${root}registro.html${redirectParam}" class="small fw-semibold">Crear cuenta</a>${cart}`;
   });
-  updateCartCount();
+  try {
+    updateCartCount();
+  } catch (e) {}
 }
 
 async function loadCurrentUser() {
   try {
     const root = location.pathname.includes('/legal/') ? '../' : '';
     const session = await apiRequest(`${root}backend/api/me.php`);
-    updateAuthNavigation(session.authenticated ? session.user : null);
+    try {
+      updateAuthNavigation(session.authenticated ? session.user : null);
+    } catch (navError) {
+      console.warn('No se pudo actualizar el menú de navegación:', navError);
+    }
     return session;
   } catch (error) {
-    updateAuthNavigation(null);
+    try {
+      updateAuthNavigation(null);
+    } catch (navError) {}
     return { authenticated: false };
   }
 }
@@ -395,7 +410,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('[data-site-header]').forEach(el=>el.innerHTML=headerTemplate());
   document.querySelectorAll('[data-site-footer]').forEach(el=>el.innerHTML=footerTemplate());
   document.querySelectorAll('[data-year]').forEach(el=>el.textContent=new Date().getFullYear());
-  updateCartCount();
+  try { updateCartCount(); } catch (e) {}
   initForms();
   initMobileNavigation();
   initAuthenticationForms();
@@ -403,5 +418,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   ensureLogoutModal();
   loadCurrentUser();
   initAccountPage();
-  document.addEventListener('click',event=>{const card=event.target.closest('.add-card');if(card)addToCart(card.dataset.id);});
+  document.addEventListener('click',event=>{
+    const card=event.target.closest('.add-card');
+    if(card && typeof addToCart === 'function') addToCart(card.dataset.id);
+  });
 });
